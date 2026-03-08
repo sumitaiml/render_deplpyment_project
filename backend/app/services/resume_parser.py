@@ -11,8 +11,12 @@ from docx import Document
 from typing import Dict, List, Tuple, Optional
 from datetime import datetime
 import spacy
-from sentence_transformers import SentenceTransformer
 import logging
+
+try:
+    from sentence_transformers import SentenceTransformer
+except Exception:  # pragma: no cover - optional dependency fallback
+    SentenceTransformer = None
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +31,16 @@ class ResumeParser:
         except:
             logger.warning("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
             self.nlp = None
-        
-        self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+
+        if SentenceTransformer is not None:
+            try:
+                self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+            except Exception as exc:
+                logger.warning(f"SBERT unavailable, using rule-based parsing only: {exc}")
+                self.sbert = None
+        else:
+            logger.warning("sentence-transformers not installed; using rule-based parsing only")
+            self.sbert = None
         self.experience_keywords = [
             "worked", "responsible for", "led", "managed", "developed", "designed",
             "implemented", "maintained", "supported", "coordinated", "supervised",

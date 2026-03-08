@@ -6,9 +6,13 @@ Ranks candidates against job descriptions using ML models
 import logging
 import numpy as np
 from typing import Dict, List, Tuple, Optional
-from sentence_transformers import SentenceTransformer
 import pickle
 import os
+
+try:
+    from sentence_transformers import SentenceTransformer
+except Exception:  # pragma: no cover - optional dependency fallback
+    SentenceTransformer = None
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +22,15 @@ class RankingModel:
     
     def __init__(self, model_path: Optional[str] = None):
         """Initialize ranking model"""
-        self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+        if SentenceTransformer is not None:
+            try:
+                self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+            except Exception as exc:
+                logger.warning(f"SBERT unavailable in ranking model; using heuristic ranking only: {exc}")
+                self.sbert = None
+        else:
+            logger.warning("sentence-transformers not installed; using heuristic ranking only")
+            self.sbert = None
         self.model = None
         self.model_path = model_path
         

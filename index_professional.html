@@ -840,7 +840,9 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000/api';
+        const API_BASE_URL = window.location.protocol === 'file:'
+            ? 'http://localhost:8000/api'
+            : `${window.location.origin}/api`;
         let allCandidates = [];
         let allJobs = [];
         let currentRankingData = null;
@@ -856,6 +858,8 @@
         // Upload Resume
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            document.getElementById('uploadError').innerHTML = '';
             
             const name = document.getElementById('candidateName').value;
             const email = document.getElementById('candidateEmail').value;
@@ -887,17 +891,18 @@
                 hideLoading();
 
                 if (response.ok) {
+                    const candidateId = data.candidate_id || data.id || 'N/A';
                     showSuccessModal('Resume Uploaded Successfully!', 
                         `Candidate: ${name}\nEmail: ${email}\nExperience: ${years} years\nSeniority: ${seniority}`,
                         {
-                            'Candidate ID': data.candidate_id.substring(0, 8) + '...',
+                            'Candidate ID': candidateId !== 'N/A' ? `${candidateId.substring(0, 8)}...` : 'N/A',
                             'Skills Detected': data.skills?.length || 0,
                             'Status': 'Ready for ranking'
                         });
                     document.getElementById('uploadForm').reset();
                     loadCandidates();
                 } else {
-                    showError('uploadError', data.detail || 'Upload failed');
+                    showError('uploadError', getErrorMessage(data) || 'Upload failed');
                 }
             } catch (error) {
                 hideLoading();
@@ -909,11 +914,17 @@
         document.getElementById('jobForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            document.getElementById('jobError').innerHTML = '';
+
             const title = document.getElementById('jobTitle').value;
             const description = document.getElementById('jobDescription').value;
             const level = document.getElementById('jobLevel').value;
             const experience = document.getElementById('jobExperience').value;
             const skills = document.getElementById('jobSkills').value;
+            const requiredSkills = skills
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
 
             showLoading('Creating job posting...');
 
@@ -926,7 +937,8 @@
                         description,
                         job_level: level,
                         years_of_experience_required: parseFloat(experience),
-                        required_skills: skills
+                        required_skills: requiredSkills,
+                        preferred_skills: []
                     })
                 });
 
@@ -934,17 +946,18 @@
                 hideLoading();
 
                 if (response.ok) {
+                    const jobId = data.id || data.job_id || 'N/A';
                     showSuccessModal('Job Created Successfully!',
                         `Position: ${title}\nLevel: ${level}\nRequired Experience: ${experience} years`,
                         {
-                            'Job ID': data.job_id.substring(0, 8) + '...',
-                            'Skills': skills.split(',').length,
+                            'Job ID': jobId !== 'N/A' ? `${jobId.substring(0, 8)}...` : 'N/A',
+                            'Skills': requiredSkills.length,
                             'Status': 'Active'
                         });
                     document.getElementById('jobForm').reset();
                     loadJobs();
                 } else {
-                    showError('jobError', data.detail || 'Job creation failed');
+                    showError('jobError', getErrorMessage(data) || 'Job creation failed');
                 }
             } catch (error) {
                 hideLoading();
@@ -979,15 +992,17 @@
                 if (response.ok) {
                     currentRankingData = data;
                     displayRankingResults(data);
+                    const topScoreRaw = data.rankings?.[0]?.overall_rank_score ?? data.rankings?.[0]?.ranking_scores?.overall_rank_score ?? null;
+                    const topScore = topScoreRaw !== null ? Number(topScoreRaw) : null;
                     showSuccessModal('Ranking Complete!',
                         `Successfully ranked ${data.total_candidates_ranked} candidate(s)`,
                         {
                             'Top Candidate': data.rankings[0]?.candidate_name || 'N/A',
-                            'Top Score': data.rankings[0]?.overall_rank_score.toFixed(1) || 'N/A',
+                            'Top Score': (topScore !== null && !Number.isNaN(topScore)) ? topScore.toFixed(1) : 'N/A',
                             'Analysis Status': 'Complete'
                         });
                 } else {
-                    showError('rankError', data.detail || 'Ranking failed');
+                    showError('rankError', getErrorMessage(data) || 'Ranking failed');
                 }
             } catch (error) {
                 hideLoading();
@@ -1001,45 +1016,52 @@
 
             if (!data.rankings || data.rankings.length === 0) {
                 container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No candidates ranked</div>';
+                finalContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No candidates ranked</div>';
                 return;
             }
 
             let html = '';
             data.rankings.forEach((ranking, index) => {
                 const positionColor = index === 0 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                const overallScore = Number(ranking.overall_rank_score ?? ranking.ranking_scores?.overall_rank_score ?? 0) || 0;
+                const skillScore = Number(ranking.skill_match_score ?? ranking.ranking_scores?.skill_match_score ?? 0) || 0;
+                const experienceScore = Number(ranking.experience_match_score ?? ranking.ranking_scores?.experience_match_score ?? 0) || 0;
+                const seniorityScore = Number(ranking.seniority_alignment_score ?? ranking.ranking_scores?.seniority_alignment_score ?? 0) || 0;
+                const matchedSkills = Array.isArray(ranking.matched_skills) ? ranking.matched_skills : [];
+                const missingSkills = Array.isArray(ranking.missing_skills) ? ranking.missing_skills : [];
                 
                 html += `
                     <div class="result-item">
                         <div class="result-header">
                             <div>
                                 <div class="rank-position" style="background: ${positionColor};">
-                                    #${index + 1} - ${ranking.candidate_name}
+                                    #${index + 1} - ${ranking.candidate_name || 'N/A'}
                                 </div>
                                 <div class="rank-email">${ranking.candidate_email || 'N/A'}</div>
                             </div>
-                            <div class="rank-score">${ranking.overall_rank_score.toFixed(1)}</div>
+                            <div class="rank-score">${overallScore.toFixed(1)}</div>
                         </div>
                         
                         <div class="score-breakdown">
                             <div class="score-item">
                                 <div class="score-label">Skills Match</div>
-                                <div class="score-value">${ranking.skill_match_score.toFixed(0)}</div>
+                                <div class="score-value">${skillScore.toFixed(0)}</div>
                                 <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${Math.min(ranking.skill_match_score, 100)}%"></div>
+                                    <div class="progress-fill" style="width: ${Math.min(skillScore, 100)}%"></div>
                                 </div>
                             </div>
                             <div class="score-item">
                                 <div class="score-label">Experience</div>
-                                <div class="score-value">${ranking.experience_match_score.toFixed(0)}</div>
+                                <div class="score-value">${experienceScore.toFixed(0)}</div>
                                 <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${Math.min(ranking.experience_match_score, 100)}%"></div>
+                                    <div class="progress-fill" style="width: ${Math.min(experienceScore, 100)}%"></div>
                                 </div>
                             </div>
                             <div class="score-item">
                                 <div class="score-label">Seniority</div>
-                                <div class="score-value">${ranking.seniority_alignment_score.toFixed(0)}</div>
+                                <div class="score-value">${seniorityScore.toFixed(0)}</div>
                                 <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${Math.min(ranking.seniority_alignment_score, 100)}%"></div>
+                                    <div class="progress-fill" style="width: ${Math.min(seniorityScore, 100)}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -1048,16 +1070,17 @@
                             <div class="insight-box">
                                 <strong>Matched Skills:</strong>
                                 <div class="skill-tags">
-                                    ${ranking.matched_skills.slice(0, 3).map(s => `<div class="skill-tag">${s}</div>`).join('')}
-                                    ${ranking.matched_skills.length > 3 ? `<div class="skill-tag">+${ranking.matched_skills.length - 3} more</div>` : ''}
+                                    ${matchedSkills.slice(0, 3).map(s => `<div class="skill-tag">${s}</div>`).join('')}
+                                    ${matchedSkills.length > 3 ? `<div class="skill-tag">+${matchedSkills.length - 3} more</div>` : ''}
+                                    ${matchedSkills.length === 0 ? '<div class="skill-tag">No matched skills</div>' : ''}
                                 </div>
                             </div>
-                            ${ranking.missing_skills.length > 0 ? `
+                            ${missingSkills.length > 0 ? `
                             <div class="insight-box" style="border-left-color: #ef4444;">
                                 <strong style="color: #ef4444;">Missing Skills:</strong>
                                 <div class="skill-tags">
-                                    ${ranking.missing_skills.slice(0, 2).map(s => `<div class="skill-tag missing">${s}</div>`).join('')}
-                                    ${ranking.missing_skills.length > 2 ? `<div class="skill-tag missing">+${ranking.missing_skills.length - 2} more</div>` : ''}
+                                    ${missingSkills.slice(0, 2).map(s => `<div class="skill-tag missing">${s}</div>`).join('')}
+                                    ${missingSkills.length > 2 ? `<div class="skill-tag missing">+${missingSkills.length - 2} more</div>` : ''}
                                 </div>
                             </div>
                             ` : ''}
@@ -1132,13 +1155,17 @@
                 const data = await response.json();
 
                 const explanation = data.explanation || {};
+                const overallScore = Number(data.overall_rank_score ?? data.scores?.overall_rank_score ?? data.ranking_scores?.overall_rank_score ?? 0) || 0;
+                const skillMatch = Number(data.scores?.skill_match ?? data.scores?.skill_match_score ?? data.ranking_scores?.skill_match_score ?? 0) || 0;
+                const experienceMatch = Number(data.scores?.experience_match ?? data.scores?.experience_match_score ?? data.ranking_scores?.experience_match_score ?? 0) || 0;
+                const seniorityMatch = Number(data.scores?.seniority_alignment ?? data.scores?.seniority_alignment_score ?? data.ranking_scores?.seniority_alignment_score ?? 0) || 0;
                 let html = `
                     <div class="explanation-section">
-                        <div class="explanation-section-title">📊 Overall Score: ${data.overall_rank_score.toFixed(1)}/100</div>
+                        <div class="explanation-section-title">📊 Overall Score: ${overallScore.toFixed(1)}/100</div>
                         <div class="explanation-section-content">
-                            <strong>Position:</strong> #${data.rank_position}<br>
-                            <strong>Seniority:</strong> ${data.candidate_name}<br>
-                            <strong>Years of Experience:</strong> ${data.candidate_years_of_experience}
+                            <strong>Position:</strong> #${data.rank_position || 'N/A'}<br>
+                            <strong>Candidate:</strong> ${data.candidate_name || 'N/A'}<br>
+                            <strong>Years of Experience:</strong> ${data.candidate_years_of_experience || 'N/A'}
                         </div>
                     </div>
 
@@ -1167,6 +1194,19 @@
                     <div class="explanation-section">
                         <div class="explanation-section-title">📋 Overall Assessment</div>
                         <div class="explanation-section-content">${explanation.overall_summary}</div>
+                    </div>
+                    ` : ''}
+
+                    ${!explanation.reason && !explanation.experience_analysis && !explanation.seniority_reasoning && !explanation.overall_summary ? `
+                    <div class="explanation-section">
+                        <div class="explanation-section-title">📊 Ranking Details</div>
+                        <div class="explanation-section-content">
+                            <strong>Skill Match:</strong> ${skillMatch.toFixed(1)}<br>
+                            <strong>Experience Match:</strong> ${experienceMatch.toFixed(1)}<br>
+                            <strong>Seniority Alignment:</strong> ${seniorityMatch.toFixed(1)}<br>
+                            <strong>Matched Skills:</strong> ${data.matched_skills_count || 0}<br>
+                            <strong>Missing Skills:</strong> ${data.missing_skills_count || 0}
+                        </div>
                     </div>
                     ` : ''}
                 `;
@@ -1203,10 +1243,59 @@
             document.getElementById('successModal').classList.remove('active');
         }
 
+        function getErrorMessage(payload) {
+            if (!payload) {
+                return 'Unknown error';
+            }
+
+            if (typeof payload === 'string') {
+                return payload;
+            }
+
+            const detail = payload.detail ?? payload.error ?? payload.message ?? payload;
+
+            if (typeof detail === 'string') {
+                return detail;
+            }
+
+            if (Array.isArray(detail)) {
+                const parts = detail.map(item => {
+                    if (typeof item === 'string') {
+                        return item;
+                    }
+
+                    if (item && typeof item === 'object') {
+                        const msg = item.msg || item.message || JSON.stringify(item);
+                        const loc = Array.isArray(item.loc) ? item.loc.slice(1).join('.') : '';
+                        return loc ? `${loc}: ${msg}` : msg;
+                    }
+
+                    return String(item);
+                });
+
+                return parts.join(' | ');
+            }
+
+            if (detail && typeof detail === 'object') {
+                if (detail.msg) {
+                    return detail.msg;
+                }
+
+                try {
+                    return JSON.stringify(detail);
+                } catch {
+                    return String(detail);
+                }
+            }
+
+            return String(detail);
+        }
+
         function showError(elementId, message) {
             const element = document.getElementById(elementId);
             if (element) {
-                element.innerHTML = `<div class="error-message">${message}</div>`;
+                const safeMessage = getErrorMessage(message);
+                element.innerHTML = `<div class="error-message">${safeMessage}</div>`;
             }
         }
 

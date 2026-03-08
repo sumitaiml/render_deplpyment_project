@@ -2,6 +2,21 @@
 
 ## Running the Platform
 
+### Flask Single-Command Startup (Frontend + Backend)
+
+Run this from project root:
+
+```powershell
+python flask_gateway.py
+```
+
+This starts:
+- Flask gateway on `http://127.0.0.1:5000`
+- FastAPI backend on `http://127.0.0.1:8000`
+- API proxy at `http://127.0.0.1:5000/api/*`
+
+Use this when you want one command and one browser URL for the full project.
+
 ### Simple One-Command Startup
 
 Just run this command from **any location**:
@@ -19,6 +34,11 @@ Just run this command from **any location**:
 ---
 
 ## 📋 Available Commands
+
+### Start with Flask Gateway (recommended single-command)
+```powershell
+python flask_gateway.py
+```
 
 ### Start the Platform
 ```powershell

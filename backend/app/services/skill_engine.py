@@ -7,8 +7,12 @@ import re
 import json
 import logging
 from typing import List, Dict, Tuple, Optional, Set
-from sentence_transformers import SentenceTransformer
 import numpy as np
+
+try:
+    from sentence_transformers import SentenceTransformer
+except Exception:  # pragma: no cover - optional dependency fallback
+    SentenceTransformer = None
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +24,15 @@ class SkillGraph:
         """Initialize skill graph"""
         self.skills = {}
         self.relationships = {}
-        self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+        if SentenceTransformer is not None:
+            try:
+                self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+            except Exception as exc:
+                logger.warning(f"SBERT unavailable in SkillGraph; continuing without embeddings: {exc}")
+                self.sbert = None
+        else:
+            logger.warning("sentence-transformers not installed; SkillGraph embeddings disabled")
+            self.sbert = None
         
         if ontology_path:
             self.load_ontology(ontology_path)
@@ -211,7 +223,14 @@ class SkillExtractor:
     def __init__(self, skill_graph: Optional[SkillGraph] = None):
         """Initialize skill extractor"""
         self.skill_graph = skill_graph or SkillGraph()
-        self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+        if SentenceTransformer is not None:
+            try:
+                self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+            except Exception as exc:
+                logger.warning(f"SBERT unavailable in SkillExtractor; using rule-based extraction: {exc}")
+                self.sbert = None
+        else:
+            self.sbert = None
     
     def extract_explicit_skills(self, text: str) -> List[Dict]:
         """Extract explicitly mentioned skills from text"""
