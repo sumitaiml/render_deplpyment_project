@@ -122,20 +122,103 @@ The repository is maintained to support clear academic/technical evaluation:
 5. Backend test availability: test module included for validation.
 6. Modular architecture: APIs, services, models, and schemas are separated for readability.
 
-## Quick Start (Recommended)
+## Detailed Run Guide
+
+This section is written for first-time evaluators and faculty review.
+
+### 1. Prerequisites
+
+- Windows PowerShell
+- Python 3.11+ (project also runs on your current setup with Python 3.13)
+- Internet connection (first run downloads packages/models)
+
+### 2. First-Time Setup (One Time Only)
 
 From project root:
+
+```powershell
+cd "c:\Users\Sumit\Downloads\mini projecttt\hrtech-platform"
+python -m venv ..\.venv
+& "c:\Users\Sumit\Downloads\mini projecttt\.venv\Scripts\Activate.ps1"
+python -m pip install --upgrade pip
+```
+
+Install required runtime packages:
+
+```powershell
+python -m pip install flask requests fastapi uvicorn sqlalchemy python-multipart pydantic pydantic-settings
+python -m pip install PyPDF2 python-docx pypdf spacy sentence-transformers transformers scikit-learn torch
+python -m spacy download en_core_web_sm
+```
+
+### 3. Start Entire Project (Frontend + Backend) With One Command
 
 ```powershell
 cd "c:\Users\Sumit\Downloads\mini projecttt\hrtech-platform"
 & "c:\Users\Sumit\Downloads\mini projecttt\.venv\Scripts\python.exe" flask_gateway.py
 ```
 
-Open:
+Open in browser:
 
-- App: `http://localhost:5000`
-- Health: `http://localhost:5000/health`
+- App UI: `http://localhost:5000`
+- Health check: `http://localhost:5000/health`
 - API docs: `http://localhost:5000/docs`
+
+### 4. Daily Run (After Initial Setup)
+
+```powershell
+cd "c:\Users\Sumit\Downloads\mini projecttt\hrtech-platform"
+& "c:\Users\Sumit\Downloads\mini projecttt\.venv\Scripts\python.exe" flask_gateway.py
+start http://localhost:5000
+```
+
+### 5. Stop the Project
+
+- Press `Ctrl+C` in the terminal where `flask_gateway.py` is running.
+
+### 6. Manual Mode (Optional)
+
+If you want backend separately:
+
+```powershell
+cd "c:\Users\Sumit\Downloads\mini projecttt\hrtech-platform\backend"
+& "c:\Users\Sumit\Downloads\mini projecttt\.venv\Scripts\python.exe" -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Then open frontend file directly (`index.html` or `index_professional.html`) and ensure backend URL is reachable.
+
+### 7. Troubleshooting (Quick)
+
+<details>
+<summary><strong>Issue: ModuleNotFoundError</strong></summary>
+
+Install missing packages into the same `.venv`:
+
+```powershell
+& "c:\Users\Sumit\Downloads\mini projecttt\.venv\Scripts\python.exe" -m pip install <package-name>
+```
+
+</details>
+
+<details>
+<summary><strong>Issue: localhost:5000 not opening</strong></summary>
+
+Check health:
+
+```powershell
+Invoke-WebRequest http://localhost:5000/health -UseBasicParsing
+```
+
+If down, start gateway again with the one command above.
+
+</details>
+
+<details>
+<summary><strong>Issue: Port already in use</strong></summary>
+
+Close old Python terminals running gateway/backend, then restart gateway.
+
+</details>
 
 ## API Endpoints (Core)
 
