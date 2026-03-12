@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRTech Platform — Loading</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #00e5ff;
+            --primary-dark: #00b8d4;
+            --primary-glow: rgba(0, 229, 255, 0.35);
+            --success: #00e5a0;
+            --success-glow: rgba(0, 229, 160, 0.3);
+            --dark: #0a0e17;
+            --dark-card: #0d1520;
+            --border: rgba(0, 229, 255, 0.15);
+            --text-dark: #e2e8f0;
+            --text-light: #8494a7;
+            --bg-page: #080c14;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--bg-page);
+            min-height: 100vh;
+            color: var(--text-dark);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* === Particle Canvas === */
+        #particles-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* === Main Container === */
+        .loader-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === Brand === */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand svg {
+            width: 42px; height: 42px;
+            color: var(--primary);
+            filter: drop-shadow(0 0 12px var(--primary-glow));
+        }
+
+        .brand-name {
+            font-family: 'Orbitron', monospace;
+            font-weight: 800;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        /* === Spinner Ring === */
+        .spinner-container {
+            position: relative;
+            width: 140px; height: 140px;
+        }
+
+        .spinner-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        .spinner-ring.outer {
+            border-top-color: var(--primary);
+            border-right-color: var(--primary);
+            animation: spinCW 1.4s linear infinite;
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        .spinner-ring.middle {
+            inset: 14px;
+            border-bottom-color: var(--success);
+            border-left-color: var(--success);
+            animation: spinCCW 1.8s linear infinite;
+            filter: drop-shadow(0 0 8px var(--success-glow));
+        }
+
+        .spinner-ring.inner {
+            inset: 28px;
+            border-top-color: var(--primary);
+            animation: spinCW 1s linear infinite;
+            opacity: 0.6;
+        }
+
+        .spinner-core {
+            position: absolute;
+            inset: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes spinCW  { to { transform: rotate(360deg); } }
+        @keyframes spinCCW { to { transform: rotate(-360deg); } }
+        @keyframes pulse   { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+
+        /* === Status Text === */
+        .status-area {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--text-dark);
+        }
+
+        .status-sub {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            max-width: 340px;
+            line-height: 1.5;
+        }
+
+        /* === Progress Bar === */
+        .progress-track {
+            width: 320px;
+            height: 4px;
+            background: rgba(0, 229, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .progress-pct {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            color: var(--primary);
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        /* === Skeleton Cards === */
+        .skeleton-section {
+            display: flex;
+            gap: 20px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.9s forwards;
+        }
+
+        .skeleton-card {
+            width: 200px;
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sk-line {
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, rgba(0,229,255,0.05) 25%, rgba(0,229,255,0.12) 50%, rgba(0,229,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        .sk-line.w80 { width: 80%; }
+        .sk-line.w60 { width: 60%; }
+        .sk-line.w100 { width: 100%; }
+        .sk-line.thick { height: 18px; }
+
+        .sk-circle {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(90deg, rgba(0,229,255,0.05) 25%, rgba(0,229,255,0.12) 50%, rgba(0,229,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* === Steps === */
+        .steps {
+            display: flex;
+            gap: 32px;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.6s forwards;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            transition: color 0.4s ease;
+        }
+
+        .step.active { color: var(--primary); }
+        .step.done   { color: var(--success); }
+
+        .step-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            border: 2px solid var(--text-light);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .step.active .step-dot {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .step.done .step-dot {
+            border-color: var(--success);
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success-glow);
+        }
+
+        /* === Fade-out === */
+        .fade-out {
+            animation: fadeOut 0.6s ease-in forwards;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: scale(1.02); }
+        }
+
+        /* === Responsive === */
+        @media (max-width: 640px) {
+            .skeleton-section { flex-direction: column; align-items: center; }
+            .skeleton-card { width: 260px; }
+            .steps { flex-direction: column; gap: 14px; align-items: flex-start; }
+            .brand-name { font-size: 1.3rem; }
+            .progress-track { width: 260px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="loader-wrapper" id="loaderWrapper">
+        <!-- Brand -->
+        <div class="brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <div class="brand-name">HRTECH PLATFORM</div>
+        </div>
+
+        <!-- Spinner -->
+        <div class="spinner-container">
+            <div class="spinner-ring outer"></div>
+            <div class="spinner-ring middle"></div>
+            <div class="spinner-ring inner"></div>
+            <div class="spinner-core"></div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-area">
+            <div class="status-text" id="statusText">INITIALIZING</div>
+            <div class="status-sub" id="statusSub">Preparing your intelligent hiring dashboard...</div>
+        </div>
+
+        <!-- Progress -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-pct" id="progressPct">0%</div>
+        </div>
+
+        <!-- Steps -->
+        <div class="steps" id="stepsContainer">
+            <div class="step active" id="step0">
+                <div class="step-dot"></div>
+                <span>Gateway</span>
+            </div>
+            <div class="step" id="step1">
+                <div class="step-dot"></div>
+                <span>Backend</span>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-dot"></div>
+                <span>AI Engine</span>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-dot"></div>
+                <span>Dashboard</span>
+            </div>
+        </div>
+
+        <!-- Skeleton Preview -->
+        <div class="skeleton-section">
+            <div class="skeleton-card">
+                <div class="sk-circle"></div>
+                <div class="sk-line thick w80"></div>
+                <div class="sk-line w100"></div>
+                <div class="sk-line w60"></div>
+            </div>
+            <div class="skeleton-card">
+                <div class="sk-circle"></div>
+                <div class="sk-line thick w60"></div>
+                <div class="sk-line w100"></div>
+                <div class="sk-line w80"></div>
+            </div>
+            <div class="skeleton-card">
+                <div class="sk-circle"></div>
+                <div class="sk-line thick w100"></div>
+                <div class="sk-line w80"></div>
+                <div class="sk-line w60"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Particles -->
+    <script>
+        (function() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const COUNT = 60;
+            const CONNECT = 130;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            for (let i = 0; i < COUNT; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: (Math.random() - 0.5) * 0.35,
+                    r: Math.random() * 1.6 + 0.4,
+                    a: Math.random() * 0.4 + 0.15
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0,229,255,' + p.a + ')';
+                    ctx.fill();
+                });
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < CONNECT) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = 'rgba(0,229,255,' + (0.07 * (1 - d / CONNECT)) + ')';
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+    </script>
+
+    <!-- Loading Logic -->
+    <script>
+        const statusText = document.getElementById('statusText');
+        const statusSub  = document.getElementById('statusSub');
+        const progressFill = document.getElementById('progressFill');
+        const progressPct  = document.getElementById('progressPct');
+
+        const phases = [
+            { pct: 15,  step: 0, text: 'CONNECTING',         sub: 'Establishing gateway connection...' },
+            { pct: 35,  step: 1, text: 'LOADING BACKEND',    sub: 'Initializing FastAPI services...' },
+            { pct: 55,  step: 1, text: 'BACKEND READY',      sub: 'AI ranking engine connected.' },
+            { pct: 70,  step: 2, text: 'AI ENGINE ONLINE',   sub: 'Resume parser and skill extractor loaded.' },
+            { pct: 85,  step: 2, text: 'PREPARING MODELS',   sub: 'Seniority inference engine ready.' },
+            { pct: 95,  step: 3, text: 'LOADING DASHBOARD',  sub: 'Building your intelligent hiring interface...' },
+            { pct: 100, step: 3, text: 'READY',              sub: 'Launching HRTech Platform...' }
+        ];
+
+        let currentPhase = 0;
+        let backendReady = false;
+
+        function setProgress(pct) {
+            progressFill.style.width = pct + '%';
+            progressPct.textContent = pct + '%';
+        }
+
+        function activateStep(idx) {
+            for (let i = 0; i < 4; i++) {
+                const el = document.getElementById('step' + i);
+                el.classList.remove('active', 'done');
+                if (i < idx) el.classList.add('done');
+                else if (i === idx) el.classList.add('active');
+            }
+        }
+
+        function runPhase() {
+            if (currentPhase >= phases.length) {
+                // All done — transition
+                setTimeout(function() {
+                    document.getElementById('loaderWrapper').classList.add('fade-out');
+                    setTimeout(function() {
+                        window.location.href = '/app';
+                    }, 600);
+                }, 400);
+                return;
+            }
+
+            var p = phases[currentPhase];
+
+            // If we hit the backend phase and haven't confirmed it yet, poll
+            if (currentPhase === 2 && !backendReady) {
+                checkBackend(function(ready) {
+                    backendReady = ready;
+                    if (!ready) {
+                        statusSub.textContent = 'Waiting for backend to become ready...';
+                        setTimeout(runPhase, 1500);
+                        return;
+                    }
+                    applyPhase(p);
+                });
+                return;
+            }
+
+            applyPhase(p);
+        }
+
+        function applyPhase(p) {
+            statusText.textContent = p.text;
+            statusSub.textContent  = p.sub;
+            setProgress(p.pct);
+            activateStep(p.step);
+            currentPhase++;
+
+            var delay = 500 + Math.random() * 600;
+            if (p.pct === 100) delay = 800;
+            setTimeout(runPhase, delay);
+        }
+
+        function checkBackend(cb) {
+            fetch('/health', { method: 'GET' })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { cb(d.backend_running === true); })
+                .catch(function() { cb(false); });
+        }
+
+        // Start after a brief delay for the entrance animation
+        setTimeout(runPhase, 800);
+    </script>
+</body>
+</html>

@@ -28,6 +28,7 @@ GATEWAY_PUBLIC_HOST = "localhost"
 GATEWAY_PORT = 5000
 
 FRONTEND_FILE = "index_professional.html" if (ROOT_DIR / "index_professional.html").exists() else "index.html"
+LOADING_FILE = "loading_dashboard.html"
 
 app = Flask(__name__, static_folder=str(ROOT_DIR), static_url_path="")
 _backend_process: subprocess.Popen | None = None
@@ -100,6 +101,13 @@ def _cleanup() -> None:
 
 @app.route("/")
 def root() -> Response:
+    if (ROOT_DIR / LOADING_FILE).exists():
+        return send_from_directory(ROOT_DIR, LOADING_FILE)
+    return send_from_directory(ROOT_DIR, FRONTEND_FILE)
+
+
+@app.route("/app")
+def main_app() -> Response:
     return send_from_directory(ROOT_DIR, FRONTEND_FILE)
 
 
