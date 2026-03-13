@@ -274,3 +274,29 @@ async def get_candidate(candidate_id: str, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching candidate: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{candidate_id}")
+@router.delete("/delete_candidate/{candidate_id}")
+async def delete_candidate(candidate_id: str, db: Session = Depends(get_db)):
+    """Delete a candidate by ID."""
+    try:
+        candidate = db.query(CandidateModel).filter(CandidateModel.id == candidate_id).first()
+
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+
+        db.delete(candidate)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "Candidate deleted successfully",
+            "candidate_id": candidate_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting candidate {candidate_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -187,3 +187,29 @@ async def get_job_details(job_id: str, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching job: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{job_id}")
+@router.delete("/delete_job/{job_id}")
+async def delete_job(job_id: str, db: Session = Depends(get_db)):
+    """Delete a job by ID."""
+    try:
+        job = db.query(JobModel).filter(JobModel.id == job_id).first()
+
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+
+        db.delete(job)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "Job deleted successfully",
+            "job_id": job_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

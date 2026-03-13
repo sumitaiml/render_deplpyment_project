@@ -298,6 +298,15 @@
         @media (max-width: 968px) {
             .main-grid { grid-template-columns: 1fr; }
             .header-title { font-size: 2.2em; }
+            .candidate-table .entity-table-head,
+            .candidate-table .entity-table-row {
+                grid-template-columns: 1.2fr 1.2fr 0.8fr 0.8fr auto;
+            }
+
+            .job-table .entity-table-head,
+            .job-table .entity-table-row {
+                grid-template-columns: 1.7fr 1fr 1fr auto;
+            }
         }
 
         @media (max-width: 640px) {
@@ -309,6 +318,41 @@
             .results-toolbar { align-items: stretch; }
             .btn-report { width: 100%; }
             .header { padding: 40px 16px 32px; }
+
+            .entity-table-head {
+                display: none;
+            }
+
+            .entity-table-row {
+                grid-template-columns: 1fr !important;
+                row-gap: 8px;
+            }
+
+            .entity-cell {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .entity-cell::before {
+                content: attr(data-label);
+                color: #86a4c4;
+                font-size: 0.72em;
+                font-weight: 700;
+                letter-spacing: 0.6px;
+                text-transform: uppercase;
+                flex-shrink: 0;
+            }
+
+            .entity-action {
+                justify-content: flex-end;
+                padding-top: 4px;
+            }
+
+            .entity-action::before {
+                content: '';
+            }
         }
 
         /* === Cards === */
@@ -577,6 +621,81 @@
             margin-top: 24px;
         }
 
+        .entity-table {
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(6, 12, 22, 0.75);
+            box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.05);
+        }
+
+        .entity-table-head,
+        .entity-table-row {
+            display: grid;
+            align-items: center;
+            column-gap: 14px;
+            padding: 12px 14px;
+        }
+
+        .entity-table-head {
+            background: rgba(0, 229, 255, 0.08);
+            color: #89a7c6;
+            font-size: 0.72em;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        .entity-table-row {
+            background: linear-gradient(90deg, rgba(0, 229, 255, 0.03), rgba(0, 229, 255, 0.01));
+            border-top: 1px solid rgba(0, 229, 255, 0.12);
+            transition: all 0.25s ease;
+        }
+
+        .entity-table-row:hover {
+            background: linear-gradient(90deg, rgba(0, 229, 255, 0.08), rgba(0, 229, 255, 0.02));
+        }
+
+        .candidate-table .entity-table-head,
+        .candidate-table .entity-table-row {
+            grid-template-columns: 1.2fr 1.55fr 0.85fr 0.9fr auto;
+        }
+
+        .job-table .entity-table-head,
+        .job-table .entity-table-row {
+            grid-template-columns: 1.7fr 1fr 1fr auto;
+        }
+
+        .entity-cell {
+            min-width: 0;
+            font-size: 0.93em;
+            color: #d6e1ef;
+            font-weight: 500;
+        }
+
+        .entity-main {
+            color: #e6edf7;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .entity-sub {
+            color: #a7bbd1;
+            font-size: 0.95em;
+            word-break: break-word;
+        }
+
+        .entity-cell-muted {
+            color: #9ab1c9;
+            text-transform: lowercase;
+        }
+
+        .entity-action {
+            display: flex;
+            justify-content: flex-end;
+        }
+
         .success-item {
             background: rgba(0, 229, 160, 0.06);
             border: 1px solid rgba(0, 229, 160, 0.15);
@@ -587,6 +706,42 @@
             animation: slideDown 0.4s ease-out;
             font-size: 0.9375em;
             color: #c8d6e5;
+        }
+
+        .success-item.has-delete {
+            position: relative;
+            padding-right: 58px;
+        }
+
+        .delete-icon-btn {
+            position: static;
+            width: 30px;
+            min-width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 99, 132, 0.5);
+            background: rgba(255, 61, 90, 0.16);
+            color: #ff8aa2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-size: 0.92em;
+            font-weight: 700;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            box-shadow: 0 0 0 rgba(255, 61, 90, 0);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .delete-icon-btn:hover {
+            border-color: rgba(255, 99, 132, 0.8);
+            color: #ffd3dd;
+            background: rgba(255, 61, 90, 0.28);
+            box-shadow: 0 0 12px rgba(255, 61, 90, 0.4), 0 0 20px rgba(255, 61, 90, 0.2);
+            transform: translateY(-1px) scale(1.03);
         }
 
         .error-message {
@@ -1371,7 +1526,7 @@
 
                 <div class="card">
                     <div class="card-title">
-                        <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+                        <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                         Uploaded Candidates
                     </div>
                     <div id="candidatesList" class="success-list"></div>
@@ -1426,7 +1581,7 @@
 
                 <div class="card">
                     <div class="card-title">
-                        <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>
+                        <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                         Created Jobs
                     </div>
                     <div id="jobsList" class="success-list"></div>
@@ -2137,6 +2292,18 @@
             setReportButtonState(true);
         }
 
+        function formatLevel(value) {
+            if (!value && value !== 0) return 'Unspecified';
+            const cleaned = String(value).replace(/_/g, ' ').trim();
+            return cleaned.length ? cleaned : 'Unspecified';
+        }
+
+        function formatYears(value) {
+            if (value === null || value === undefined || value === '') return 'N/A';
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? String(parsed) : 'N/A';
+        }
+
         async function loadCandidates() {
             try {
                 const response = await fetch(`${API_BASE_URL}/candidates/list`);
@@ -2149,12 +2316,36 @@
                     container.innerHTML = '';
                 } else {
                     document.getElementById('noCandidates').style.display = 'none';
-                    container.innerHTML = allCandidates.map(c => `
-                        <div class="success-item">
-                            <strong>${c.name}</strong> - ${c.email}<br>
-                            <small>${c.years_of_experience} years • ${c.inferred_seniority}</small>
+                    const rows = allCandidates.map(c => {
+                        const name = c.name || 'N/A';
+                        const email = c.email || 'N/A';
+                        const years = formatYears(c.years_of_experience);
+                        const level = formatLevel(c.inferred_seniority);
+                        return `
+                            <div class="entity-table-row">
+                                <div class="entity-cell" data-label="Name"><span class="entity-main">${name}</span></div>
+                                <div class="entity-cell" data-label="Email"><span class="entity-sub">${email}</span></div>
+                                <div class="entity-cell" data-label="Experience">${years}</div>
+                                <div class="entity-cell entity-cell-muted" data-label="Level">${level}</div>
+                                <div class="entity-cell entity-action" data-label="Action">
+                                    <button type="button" class="delete-icon-btn" onclick="deleteCandidate('${c.id}')" title="Delete candidate" aria-label="Delete candidate">✕</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    container.innerHTML = `
+                        <div class="entity-table candidate-table">
+                            <div class="entity-table-head">
+                                <div>Name</div>
+                                <div>Email</div>
+                                <div>Experience</div>
+                                <div>Level</div>
+                                <div style="text-align:right;">Action</div>
+                            </div>
+                            ${rows}
                         </div>
-                    `).join('');
+                    `;
                 }
             } catch (error) {
                 console.error('Error loading candidates:', error);
@@ -2178,15 +2369,119 @@
                     container.innerHTML = '';
                 } else {
                     document.getElementById('noJobs').style.display = 'none';
-                    container.innerHTML = allJobs.map(j => `
-                        <div class="success-item">
-                            <strong>${j.title}</strong><br>
-                            <small>${j.job_level} • ${j.years_of_experience_required} years required</small>
+                    const rows = allJobs.map(j => {
+                        const title = j.title || 'N/A';
+                        const level = formatLevel(j.job_level);
+                        const years = formatYears(j.years_of_experience_required);
+                        return `
+                            <div class="entity-table-row">
+                                <div class="entity-cell" data-label="Job Title"><span class="entity-main">${title}</span></div>
+                                <div class="entity-cell entity-cell-muted" data-label="Level">${level}</div>
+                                <div class="entity-cell" data-label="Experience">${years}</div>
+                                <div class="entity-cell entity-action" data-label="Action">
+                                    <button type="button" class="delete-icon-btn" onclick="deleteJob('${j.id}')" title="Delete job" aria-label="Delete job">✕</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    container.innerHTML = `
+                        <div class="entity-table job-table">
+                            <div class="entity-table-head">
+                                <div>Job Title</div>
+                                <div>Level</div>
+                                <div>Experience</div>
+                                <div style="text-align:right;">Action</div>
+                            </div>
+                            ${rows}
                         </div>
-                    `).join('');
+                    `;
                 }
             } catch (error) {
                 console.error('Error loading jobs:', error);
+            }
+        }
+
+        async function deleteCandidate(candidateId) {
+            if (!candidateId) return;
+
+            const confirmed = window.confirm('Delete this candidate? This action cannot be undone.');
+            if (!confirmed) return;
+
+            document.getElementById('uploadError').innerHTML = '';
+
+            showLoading('Deleting candidate...');
+            try {
+                const response = await fetch(`${API_BASE_URL}/candidates/delete_candidate/${candidateId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                hideLoading();
+
+                if (!response.ok) {
+                    showError('uploadError', getErrorMessage(data) || 'Failed to delete candidate');
+                    return;
+                }
+
+                // Keep in-memory ranking snapshot consistent if present
+                if (currentRankingData && Array.isArray(currentRankingData.rankings)) {
+                    currentRankingData.rankings = currentRankingData.rankings.filter(r => r.candidate_id !== candidateId);
+                    currentRankingData.total_candidates_ranked = currentRankingData.rankings.length;
+                    displayRankingResults(currentRankingData);
+                }
+
+                await loadCandidates();
+                showSuccessModal('Candidate Deleted', 'Selected candidate has been removed from the database.', {
+                    'Entity': 'Candidate',
+                    'Status': 'Deleted',
+                    'ID': `${candidateId.substring(0, 8)}...`
+                });
+            } catch (error) {
+                hideLoading();
+                showError('uploadError', `Error deleting candidate: ${error.message}`);
+            }
+        }
+
+        async function deleteJob(jobId) {
+            if (!jobId) return;
+
+            const confirmed = window.confirm('Delete this job? This action cannot be undone.');
+            if (!confirmed) return;
+
+            document.getElementById('jobError').innerHTML = '';
+
+            showLoading('Deleting job...');
+            try {
+                const response = await fetch(`${API_BASE_URL}/jobs/delete_job/${jobId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                hideLoading();
+
+                if (!response.ok) {
+                    showError('jobError', getErrorMessage(data) || 'Failed to delete job');
+                    return;
+                }
+
+                const selectedJob = document.getElementById('selectJob');
+                if (selectedJob && selectedJob.value === jobId) {
+                    selectedJob.value = '';
+                    currentRankingData = null;
+                    document.getElementById('rankingResults').innerHTML = '';
+                    document.getElementById('finalResults').innerHTML = '';
+                    document.getElementById('noResults').style.display = 'block';
+                    setReportButtonState(false);
+                }
+
+                await loadJobs();
+                showSuccessModal('Job Deleted', 'Selected job has been removed from the database.', {
+                    'Entity': 'Job',
+                    'Status': 'Deleted',
+                    'ID': `${jobId.substring(0, 8)}...`
+                });
+            } catch (error) {
+                hideLoading();
+                showError('jobError', `Error deleting job: ${error.message}`);
             }
         }
 
