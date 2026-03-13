@@ -11,6 +11,7 @@ from fastapi.openapi.utils import get_openapi
 
 from app.core import settings, DatabaseManager
 from app.apis import candidates, jobs, ranking
+from app.apis import auth
 
 # Setup logging
 log_level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)
@@ -53,6 +54,7 @@ app.add_middleware(
 app.include_router(candidates.router)
 app.include_router(jobs.router)
 app.include_router(ranking.router)
+app.include_router(auth.router)
 
 
 @app.get("/")

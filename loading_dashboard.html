@@ -457,11 +457,16 @@
 
         function runPhase() {
             if (currentPhase >= phases.length) {
-                // All done — transition
+                // All done — check auth then redirect
                 setTimeout(function() {
                     document.getElementById('loaderWrapper').classList.add('fade-out');
                     setTimeout(function() {
-                        window.location.href = '/app';
+                        var token = localStorage.getItem('hrtech_token');
+                        if (token) {
+                            window.location.href = '/app';
+                        } else {
+                            window.location.href = '/login';
+                        }
                     }, 600);
                 }, 400);
                 return;

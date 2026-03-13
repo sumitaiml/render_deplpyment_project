@@ -29,6 +29,8 @@ GATEWAY_PORT = 5000
 
 FRONTEND_FILE = "index_professional.html" if (ROOT_DIR / "index_professional.html").exists() else "index.html"
 LOADING_FILE = "loading_dashboard.html"
+LOGIN_FILE = "login.html"
+SIGNUP_FILE = "signup.html"
 
 app = Flask(__name__, static_folder=str(ROOT_DIR), static_url_path="")
 _backend_process: subprocess.Popen | None = None
@@ -109,6 +111,16 @@ def root() -> Response:
 @app.route("/app")
 def main_app() -> Response:
     return send_from_directory(ROOT_DIR, FRONTEND_FILE)
+
+
+@app.route("/login")
+def login_page() -> Response:
+    return send_from_directory(ROOT_DIR, LOGIN_FILE)
+
+
+@app.route("/signup")
+def signup_page() -> Response:
+    return send_from_directory(ROOT_DIR, SIGNUP_FILE)
 
 
 @app.route("/<path:filename>")

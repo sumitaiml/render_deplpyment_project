@@ -13,6 +13,15 @@
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $BackendDir = Join-Path $ScriptDir "backend"
 $FrontendFile = Join-Path $ScriptDir "index.html"
+$ProjectRoot = Split-Path -Parent $ScriptDir
+
+# Prefer project virtual environment Python, fallback to PATH python
+$VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
+if (Test-Path $VenvPython) {
+    $PythonExe = $VenvPython
+} else {
+    $PythonExe = "python"
+}
 
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host "         HRTech Platform - Starting Application" -ForegroundColor Cyan
@@ -37,8 +46,11 @@ if (-not (Test-Path $FrontendFile)) {
 
 # Check if Python is installed
 try {
-    $pythonVersion = python --version 2>&1
+    $pythonVersion = & $PythonExe --version 2>&1
     Write-Host "[OK] Python found: $pythonVersion" -ForegroundColor Green
+    if ($PythonExe -ne "python") {
+        Write-Host "[OK] Using virtual environment: $PythonExe" -ForegroundColor Green
+    }
 } catch {
     Write-Host "[ERROR] Python is not installed or not in PATH" -ForegroundColor Red
     Write-Host "   Please install Python 3.8+ from https://www.python.org/" -ForegroundColor Yellow
@@ -60,7 +72,7 @@ if ($existingProcess) {
 }
 
 # Start the backend server in a new PowerShell window
-$backendCommand = "cd '$BackendDir'; python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+$backendCommand = "cd '$BackendDir'; & '$PythonExe' -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand -WindowStyle Normal
 
 Write-Host "[OK] Backend server starting on http://localhost:8000" -ForegroundColor Green

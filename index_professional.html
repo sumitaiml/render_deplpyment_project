@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HRTech Platform - Professional Resume Ranking System</title>
+    <!-- Auth Guard: redirect to login if no valid token -->
+    <script>
+        (function () {
+            var token = localStorage.getItem('hrtech_token');
+            if (!token) { window.location.replace('/login'); }
+        })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* === Base Reset === */
@@ -106,6 +113,45 @@
 
         .navbar-link:hover {
             color: var(--primary);
+        }
+
+        .nav-user {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 229, 255, 0.07);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 999px;
+            padding: 4px 12px 4px 5px;
+            min-height: 38px;
+        }
+
+        .nav-user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.78em;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 229, 255, 0.22), rgba(0, 229, 255, 0.08));
+            border: 1px solid rgba(0, 229, 255, 0.28);
+            flex-shrink: 0;
+        }
+
+        .nav-user-name {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.95em;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
         }
 
         /* === Container === */
@@ -257,6 +303,9 @@
         @media (max-width: 640px) {
             .tabs-container { flex-direction: column; gap: 6px; }
             .navbar { padding: 12px 20px; }
+            .navbar-actions { gap: 10px; }
+            .nav-user { padding-right: 10px; }
+            .nav-user-name { max-width: 96px; }
             .header { padding: 40px 16px 32px; }
         }
 
@@ -1087,6 +1136,14 @@
         </div>
         <div class="navbar-actions">
             <span class="navbar-link" onclick="switchTab('results')">&#x2727; Scoreboard</span>
+            <div class="nav-user" aria-label="Current logged in user">
+                <span class="nav-user-avatar" id="navUserInitial" aria-hidden="true">U</span>
+                <span class="nav-user-name" id="navUsername">User</span>
+            </div>
+            <button class="navbar-link" id="logoutBtn" onclick="handleLogout()" style="background:none;border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:6px 14px;color:var(--text-light);cursor:pointer;font-family:inherit;font-size:0.9em;transition:all 0.3s;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.1em;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </button>
         </div>
     </nav>
 
@@ -1946,6 +2003,40 @@
         // Initialize
         loadCandidates();
         loadJobs();
+
+        // ── Auth ──────────────────────────────────────────────────────────────
+        (function initAuth() {
+            const raw = localStorage.getItem('hrtech_user');
+            const nameEl = document.getElementById('navUsername');
+            const initialEl = document.getElementById('navUserInitial');
+
+            function setUserChip(username) {
+                const safeName = (username || 'User').trim();
+                if (nameEl) nameEl.textContent = safeName;
+                if (initialEl) initialEl.textContent = safeName.charAt(0) || 'U';
+            }
+
+            if (!raw) {
+                setUserChip('User');
+                return;
+            }
+
+            if (raw) {
+                try {
+                    const user = JSON.parse(raw);
+                    const username = user.username || (user.email ? user.email.split('@')[0] : 'User');
+                    setUserChip(username);
+                } catch (_) {
+                    setUserChip('User');
+                }
+            }
+        })();
+
+        function handleLogout() {
+            localStorage.removeItem('hrtech_token');
+            localStorage.removeItem('hrtech_user');
+            window.location.href = '/login';
+        }
     </script>
 </body>
 </html>
