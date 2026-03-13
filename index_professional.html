@@ -306,6 +306,8 @@
             .navbar-actions { gap: 10px; }
             .nav-user { padding-right: 10px; }
             .nav-user-name { max-width: 96px; }
+            .results-toolbar { align-items: stretch; }
+            .btn-report { width: 100%; }
             .header { padding: 40px 16px 32px; }
         }
 
@@ -411,12 +413,119 @@
 
         .file-input-wrapper {
             position: relative;
-            overflow: hidden;
+            width: 100%;
         }
 
-        .file-input-wrapper input[type="file"] {
-            padding: 12px;
+        .file-input-native {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
             cursor: pointer;
+            z-index: 2;
+        }
+
+        .file-input-display {
+            min-height: 58px;
+            border: 1px solid rgba(0, 229, 255, 0.12);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(8, 12, 20, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .file-input-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            background: rgba(0, 229, 255, 0.08);
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.66em;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            flex-shrink: 0;
+        }
+
+        .file-input-wrapper:hover .file-input-display {
+            border-color: var(--border-hover);
+        }
+
+        .file-input-wrapper:focus-within .file-input-display {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1), 0 0 20px rgba(0, 229, 255, 0.08);
+            background: rgba(8, 12, 20, 0.8);
+        }
+
+        .file-input-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #00b8d4 100%);
+            color: #07131d;
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 0.78em;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            white-space: nowrap;
+        }
+
+        .file-input-text {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .file-input-name {
+            color: #9fb0c6;
+            font-size: 0.92em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-input-hint {
+            color: #6b7f95;
+            font-size: 0.74em;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-input-wrapper.has-file .file-input-name {
+            color: var(--primary);
+        }
+
+        .file-input-wrapper.has-file .file-input-icon {
+            border-color: rgba(0, 229, 160, 0.35);
+            background: rgba(0, 229, 160, 0.12);
+            color: var(--success);
+        }
+
+        .file-input-wrapper.drag-over .file-input-display {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.12), 0 0 30px rgba(0, 229, 255, 0.18);
+            background: rgba(8, 12, 20, 0.86);
+            animation: dropPulse 1.1s ease-in-out infinite;
+        }
+
+        .file-input-wrapper.drag-over .file-input-hint {
+            color: var(--primary);
+        }
+
+        @keyframes dropPulse {
+            0% { box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.12), 0 0 12px rgba(0, 229, 255, 0.12); }
+            50% { box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.18), 0 0 28px rgba(0, 229, 255, 0.25); }
+            100% { box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.12), 0 0 12px rgba(0, 229, 255, 0.12); }
         }
 
         /* === Buttons === */
@@ -510,6 +619,39 @@
 
         .ranking-results {
             margin-top: 32px;
+        }
+
+        .results-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .results-toolbar .card-title {
+            margin-bottom: 0;
+        }
+
+        .btn-report {
+            width: auto;
+            min-width: 220px;
+            padding: 10px 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.82em;
+            letter-spacing: 0.7px;
+            border: 1px solid rgba(0, 229, 255, 0.24);
+            box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.1);
+        }
+
+        .btn-report svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
         }
 
         .result-item {
@@ -1209,8 +1351,16 @@
                         </div>
                         <div class="form-group">
                             <label>Resume File (PDF, DOCX, TXT)</label>
-                            <div class="file-input-wrapper">
-                                <input type="file" id="resumeFile" accept=".pdf,.docx,.txt" required>
+                            <div class="file-input-wrapper" id="resumeFileWrapper">
+                                <input type="file" id="resumeFile" class="file-input-native" accept=".pdf,.docx,.txt" required>
+                                <div class="file-input-display" aria-hidden="true">
+                                    <span class="file-input-icon" id="resumeFileType">FILE</span>
+                                    <span class="file-input-btn">Choose File</span>
+                                    <span class="file-input-text">
+                                        <span class="file-input-name" id="resumeFileName">No file chosen</span>
+                                        <span class="file-input-hint" id="resumeFileHint">Drop file here or click to browse</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <button type="submit" class="btn-primary">Upload Resume</button>
@@ -1312,10 +1462,17 @@
         <!-- Results Tab -->
         <div id="results" class="tab-content">
             <div class="rank-section">
-                <div class="card-title">
-                    <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
-                    Ranking Results
+                <div class="results-toolbar">
+                    <div class="card-title">
+                        <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+                        Ranking Results
+                    </div>
+                    <button type="button" class="btn-primary btn-report" id="downloadReportBtn" onclick="downloadRankingReportPdf()" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download PDF Report
+                    </button>
                 </div>
+                <div id="resultsError"></div>
                 <div id="finalResults" class="ranking-results"></div>
                 <div id="noResults" class="empty-state">
                     <div class="empty-state-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
@@ -1445,6 +1602,8 @@
         })();
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
     <!-- Application Logic -->
     <script>
         const API_BASE_URL = window.location.protocol === 'file:'
@@ -1460,6 +1619,97 @@
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             event.target.closest('.tab').classList.add('active');
+        }
+
+        // Themed file input state
+        const resumeFileInput = document.getElementById('resumeFile');
+        const resumeFileName = document.getElementById('resumeFileName');
+        const resumeFileHint = document.getElementById('resumeFileHint');
+        const resumeFileType = document.getElementById('resumeFileType');
+        const resumeFileWrapper = document.getElementById('resumeFileWrapper');
+
+        const allowedResumeExtensions = ['pdf', 'docx', 'txt'];
+
+        function formatFileSize(bytes) {
+            if (!bytes || Number.isNaN(bytes)) return '';
+            if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+            if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+            return `${bytes} B`;
+        }
+
+        function getFileExt(filename) {
+            if (!filename || !filename.includes('.')) return '';
+            return filename.split('.').pop().toLowerCase();
+        }
+
+        function refreshResumeFileUi() {
+            if (!resumeFileInput || !resumeFileName || !resumeFileWrapper || !resumeFileHint || !resumeFileType) return;
+            const file = resumeFileInput.files && resumeFileInput.files[0];
+            if (file) {
+                const ext = getFileExt(file.name);
+                resumeFileName.textContent = file.name;
+                resumeFileType.textContent = (ext || 'FILE').toUpperCase();
+                resumeFileHint.textContent = `${formatFileSize(file.size)} • click to replace`;
+                resumeFileWrapper.classList.add('has-file');
+            } else {
+                resumeFileName.textContent = 'No file chosen';
+                resumeFileType.textContent = 'FILE';
+                resumeFileHint.textContent = 'Drop file here or click to browse';
+                resumeFileWrapper.classList.remove('has-file');
+            }
+        }
+
+        function handleDroppedFile(file) {
+            if (!file || !resumeFileInput) return;
+
+            const ext = getFileExt(file.name);
+            if (!allowedResumeExtensions.includes(ext)) {
+                showError('uploadError', 'Only PDF, DOCX, and TXT files are supported.');
+                return;
+            }
+
+            try {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                resumeFileInput.files = dt.files;
+            } catch (_) {
+                // Fallback for browsers with restricted DataTransfer assignment
+                try {
+                    resumeFileInput.files = [file];
+                } catch (__ ) {}
+            }
+
+            refreshResumeFileUi();
+        }
+
+        if (resumeFileInput) {
+            resumeFileInput.addEventListener('change', refreshResumeFileUi);
+            refreshResumeFileUi();
+        }
+
+        if (resumeFileWrapper) {
+            ['dragenter', 'dragover'].forEach((evtName) => {
+                resumeFileWrapper.addEventListener(evtName, (evt) => {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    resumeFileWrapper.classList.add('drag-over');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach((evtName) => {
+                resumeFileWrapper.addEventListener(evtName, (evt) => {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    resumeFileWrapper.classList.remove('drag-over');
+                });
+            });
+
+            resumeFileWrapper.addEventListener('drop', (evt) => {
+                const files = evt.dataTransfer?.files;
+                if (files && files.length > 0) {
+                    handleDroppedFile(files[0]);
+                }
+            });
         }
 
         // Upload Resume
@@ -1507,6 +1757,7 @@
                             'Status': 'Ready for ranking'
                         });
                     document.getElementById('uploadForm').reset();
+                    refreshResumeFileUi();
                     loadCandidates();
                 } else {
                     showError('uploadError', getErrorMessage(data) || 'Upload failed');
@@ -1617,6 +1868,187 @@
             }
         }
 
+        function setReportButtonState(enabled) {
+            const btn = document.getElementById('downloadReportBtn');
+            if (!btn) return;
+            btn.disabled = !enabled;
+            btn.title = enabled
+                ? 'Download the current ranking results as a PDF file.'
+                : 'Generate ranking results first to enable PDF download.';
+        }
+
+        function getSelectedJobTitle(jobId) {
+            const job = allJobs.find(j => j.id === jobId);
+            return job?.title || 'Selected Job';
+        }
+
+        async function getRankingDataForReport() {
+            if (currentRankingData && Array.isArray(currentRankingData.rankings) && currentRankingData.rankings.length > 0) {
+                return currentRankingData;
+            }
+
+            const selectedJobId = document.getElementById('selectJob')?.value;
+            if (!selectedJobId) {
+                throw new Error('No ranking data available. Please rank candidates first.');
+            }
+
+            const response = await fetch(`${API_BASE_URL}/ranking/rankings/${selectedJobId}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(getErrorMessage(data) || 'Unable to load ranking results for PDF report.');
+            }
+
+            const rankings = Array.isArray(data.rankings)
+                ? data.rankings.map((r, idx) => ({
+                    rank_position: r.rank_position || idx + 1,
+                    candidate_name: r.candidate_name || 'N/A',
+                    candidate_email: r.candidate_email || 'N/A',
+                    overall_rank_score: Number(r.overall_rank_score ?? 0) || 0,
+                    skill_match_score: Number(r.skill_match_score ?? 0) || 0,
+                    experience_match_score: Number(r.experience_match_score ?? 0) || 0,
+                    seniority_alignment_score: Number(r.seniority_alignment_score ?? 0) || 0,
+                    matched_skills: [],
+                    missing_skills: []
+                }))
+                : [];
+
+            return {
+                job_id: selectedJobId,
+                job_title: getSelectedJobTitle(selectedJobId),
+                total_candidates_ranked: rankings.length,
+                rankings
+            };
+        }
+
+        async function downloadRankingReportPdf() {
+            document.getElementById('resultsError').innerHTML = '';
+
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showError('resultsError', 'PDF tool failed to load. Please refresh and try again.');
+                return;
+            }
+
+            showLoading('Generating ranking PDF report...');
+
+            try {
+                const reportData = await getRankingDataForReport();
+
+                if (!Array.isArray(reportData.rankings) || reportData.rankings.length === 0) {
+                    throw new Error('No ranking results available for PDF export.');
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 38;
+                let y = 36;
+
+                const now = new Date();
+                const generatedAt = now.toLocaleString();
+                const jobTitle = reportData.job_title || getSelectedJobTitle(reportData.job_id) || 'Selected Job';
+                const total = reportData.total_candidates_ranked || reportData.rankings.length;
+
+                // Header block themed to match UI
+                doc.setFillColor(8, 12, 20);
+                doc.rect(0, 0, pageWidth, 108, 'F');
+                doc.setDrawColor(0, 229, 255);
+                doc.setLineWidth(1);
+                doc.line(0, 108, pageWidth, 108);
+
+                doc.setTextColor(0, 229, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(20);
+                doc.text('HRTECH PLATFORM', margin, 44);
+
+                doc.setTextColor(148, 163, 184);
+                doc.setFontSize(11);
+                doc.text('AI-Powered Candidate Ranking Report', margin, 64);
+
+                doc.setTextColor(226, 232, 240);
+                doc.setFontSize(10.5);
+                doc.text(`Job: ${jobTitle}`, margin, 86);
+                doc.text(`Candidates Ranked: ${total}`, margin + 260, 86);
+                doc.text(`Generated: ${generatedAt}`, margin, 100);
+
+                y = 128;
+
+                reportData.rankings.forEach((ranking, index) => {
+                    const overall = Number(ranking.overall_rank_score ?? ranking.ranking_scores?.overall_rank_score ?? 0) || 0;
+                    const skill = Number(ranking.skill_match_score ?? ranking.ranking_scores?.skill_match_score ?? 0) || 0;
+                    const exp = Number(ranking.experience_match_score ?? ranking.ranking_scores?.experience_match_score ?? 0) || 0;
+                    const seniority = Number(ranking.seniority_alignment_score ?? ranking.ranking_scores?.seniority_alignment_score ?? 0) || 0;
+                    const matchedSkills = Array.isArray(ranking.matched_skills) ? ranking.matched_skills : [];
+                    const missingSkills = Array.isArray(ranking.missing_skills) ? ranking.missing_skills : [];
+
+                    const matchedLine = `Matched: ${matchedSkills.slice(0, 6).join(', ') || 'N/A'}`;
+                    const missingLine = `Missing: ${missingSkills.slice(0, 4).join(', ') || 'N/A'}`;
+                    const wrappedMatched = doc.splitTextToSize(matchedLine, pageWidth - margin * 2 - 20);
+                    const wrappedMissing = doc.splitTextToSize(missingLine, pageWidth - margin * 2 - 20);
+                    const boxHeight = 86 + (wrappedMatched.length * 12) + (wrappedMissing.length * 12);
+
+                    if (y + boxHeight > pageHeight - 40) {
+                        doc.addPage();
+                        y = 36;
+                    }
+
+                    doc.setFillColor(13, 21, 32);
+                    doc.setDrawColor(0, 229, 255);
+                    doc.setLineWidth(0.5);
+                    doc.roundedRect(margin, y, pageWidth - margin * 2, boxHeight, 8, 8, 'FD');
+
+                    doc.setTextColor(0, 229, 255);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(12);
+                    doc.text(`#${ranking.rank_position || index + 1}  ${ranking.candidate_name || 'N/A'}`, margin + 14, y + 22);
+
+                    doc.setTextColor(226, 232, 240);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(16);
+                    doc.text(`${overall.toFixed(1)}`, pageWidth - margin - 58, y + 24);
+
+                    doc.setTextColor(148, 163, 184);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9.5);
+                    doc.text(ranking.candidate_email || 'N/A', margin + 14, y + 38);
+
+                    doc.setTextColor(200, 214, 229);
+                    doc.setFontSize(10);
+                    doc.text(`Skills: ${skill.toFixed(0)}   |   Experience: ${exp.toFixed(0)}   |   Seniority: ${seniority.toFixed(0)}`, margin + 14, y + 56);
+
+                    doc.setTextColor(0, 229, 160);
+                    doc.setFontSize(9.5);
+                    doc.text(wrappedMatched, margin + 14, y + 74);
+
+                    doc.setTextColor(0, 207, 255);
+                    doc.setFontSize(9.5);
+                    doc.text(wrappedMissing, margin + 14, y + 74 + (wrappedMatched.length * 12));
+
+                    y += boxHeight + 14;
+                });
+
+                const safeJob = String(jobTitle).replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '') || 'job';
+                const fileName = `HRTech_Ranking_Report_${safeJob}_${now.toISOString().slice(0, 10)}.pdf`;
+                doc.save(fileName);
+
+                showSuccessModal(
+                    'PDF Report Ready',
+                    'Ranking report downloaded successfully.',
+                    {
+                        'Job': jobTitle,
+                        'Candidates': total,
+                        'Format': 'PDF'
+                    }
+                );
+            } catch (error) {
+                showError('resultsError', `PDF export failed: ${getErrorMessage(error?.message || error)}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
         function displayRankingResults(data) {
             const container = document.getElementById('rankingResults');
             const finalContainer = document.getElementById('finalResults');
@@ -1624,6 +2056,7 @@
             if (!data.rankings || data.rankings.length === 0) {
                 container.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>No candidates ranked</div>';
                 finalContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>No candidates ranked</div>';
+                setReportButtonState(false);
                 return;
             }
 
@@ -1701,6 +2134,7 @@
             container.innerHTML = html;
             finalContainer.innerHTML = html;
             document.getElementById('noResults').style.display = 'none';
+            setReportButtonState(true);
         }
 
         async function loadCandidates() {
@@ -2003,6 +2437,7 @@
         // Initialize
         loadCandidates();
         loadJobs();
+        setReportButtonState(false);
 
         // ── Auth ──────────────────────────────────────────────────────────────
         (function initAuth() {
