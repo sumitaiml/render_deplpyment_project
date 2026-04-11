@@ -248,3 +248,7 @@ python -m pytest tests/test_backend.py -v
 ## Author
 
 - Sumit Singh (`sumitaiml`)
+
+## Update Note
+
+This README has been updated for better clarity.
