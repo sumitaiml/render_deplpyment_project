@@ -256,3 +256,9 @@ This README has been updated for better clarity.
 ## Additional Information
 
 For more details, refer to the project documentation.
+
+## Changelog
+
+- Initial release
+- Added clarity notes
+- Enhanced documentation
