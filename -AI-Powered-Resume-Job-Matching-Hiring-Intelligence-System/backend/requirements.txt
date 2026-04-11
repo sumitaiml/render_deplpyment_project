@@ -1,0 +1,43 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+sqlalchemy==2.0.39
+psycopg2-binary==2.9.9
+python-multipart==0.0.6
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# NLP & ML
+spacy==3.8.11
+transformers==4.57.6
+sentence-transformers==5.2.3
+scikit-learn==1.8.0
+xgboost==2.0.2
+lightgbm==4.1.0
+numpy==2.4.2
+pandas==2.3.3
+
+# PDF & Document Processing
+PyPDF2==3.0.1
+python-docx==0.8.11
+pypdf==3.17.1
+
+# Vector DB & Embeddings
+faiss-cpu==1.7.4
+pinecone-client==2.2.4
+
+# Database & Cache
+redis==5.0.1
+SQLAlchemy-Utils==0.41.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# Utils
+flask==3.0.3
+python-jose==3.3.0
+passlib==1.7.4
+python-dotenv==1.0.0
+requests==2.31.0
+aiofiles==23.2.1
