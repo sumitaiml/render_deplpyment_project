@@ -252,3 +252,7 @@ python -m pytest tests/test_backend.py -v
 ## Update Note
 
 This README has been updated for better clarity.
+
+## Additional Information
+
+For more details, refer to the project documentation.
