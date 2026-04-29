@@ -72,7 +72,17 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     return {
-        "status": "healthy",
+        "status": "ok",
+        "service": "hrtech-platform",
+        "version": settings.API_VERSION
+    }
+
+
+@app.get("/api/health")
+async def api_health_check():
+    """Alias health endpoint used by frontend/gateway checks."""
+    return {
+        "status": "ok",
         "service": "hrtech-platform",
         "version": settings.API_VERSION
     }

@@ -505,9 +505,27 @@
 
         function checkBackend(cb) {
             fetch('/health', { method: 'GET' })
-                .then(function(r) { return r.json(); })
-                .then(function(d) { cb(d.backend_running === true); })
-                .catch(function() { cb(false); });
+                .then(function(r) {
+                    if (!r.ok) throw new Error('health endpoint unavailable');
+                    return r.json();
+                })
+                .then(function(d) {
+                    // Gateway response includes backend_running; backend-only response may only include status.
+                    const ready = d.backend_running === true || d.status === 'ok' || d.status === 'healthy';
+                    cb(ready);
+                })
+                .catch(function() {
+                    fetch('/api/health', { method: 'GET' })
+                        .then(function(r) {
+                            if (!r.ok) throw new Error('api health endpoint unavailable');
+                            return r.json();
+                        })
+                        .then(function(d) {
+                            const ready = d.backend_running === true || d.status === 'ok' || d.status === 'healthy';
+                            cb(ready);
+                        })
+                        .catch(function() { cb(false); });
+                });
         }
 
         // Start after a brief delay for the entrance animation

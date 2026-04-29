@@ -148,9 +148,20 @@ def serve_file(filename: str):
 def gateway_health():
     return jsonify(
         {
-            "status": "healthy",
+            "status": "ok",
             "service": "hrtech-platform-gateway",
             "frontend": FRONTEND_FILE,
+            "backend_running": _is_backend_running(),
+        }
+    )
+
+
+@app.route("/api/health")
+def gateway_api_health():
+    return jsonify(
+        {
+            "status": "ok",
+            "service": "hrtech-platform-gateway",
             "backend_running": _is_backend_running(),
         }
     )
