@@ -99,6 +99,18 @@ def _start_backend_async() -> None:
     thread.start()
 
 
+def _ensure_backend_running(max_wait_seconds: int = 20) -> bool:
+    if _is_backend_running():
+        return True
+
+    _start_backend_async()
+    for _ in range(max_wait_seconds):
+        if _is_backend_running():
+            return True
+        time.sleep(1)
+    return False
+
+
 def _stop_backend() -> None:
     if _backend_process and _backend_process.poll() is None:
         print("[gateway] Stopping backend process...")
@@ -174,6 +186,9 @@ def docs_redirect():
 
 @app.route("/api/<path:path>", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
 def proxy_api(path: str):
+    if not _ensure_backend_running():
+        return jsonify({"detail": "Backend is starting. Please retry in a few seconds."}), 503
+
     target_url = f"{BACKEND_BASE_URL}/api/{path}"
 
     request_headers = {

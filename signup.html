@@ -537,6 +537,25 @@
             : 'CREATE ACCOUNT';
     }
 
+    async function fetchWithTimeout(url, options, timeoutMs) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    async function parseResponse(res) {
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch (_) {
+            return { detail: text || 'Unexpected server response.' };
+        }
+    }
+
     // ── If already logged in, skip ─────────────────────────────────────────────
     (function () {
         const token = localStorage.getItem('hrtech_token');
@@ -589,13 +608,13 @@
         setLoading(true);
 
         try {
-            const res = await fetch('/api/auth/register', {
+            const res = await fetchWithTimeout('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })
-            });
+            }, 30000);
 
-            const data = await res.json();
+            const data = await parseResponse(res);
 
             if (res.ok) {
                 localStorage.setItem('hrtech_token', data.access_token);
@@ -606,7 +625,11 @@
                 showError(msg);
             }
         } catch (err) {
-            showError('Network error. Please check your connection and try again.');
+            if (err && err.name === 'AbortError') {
+                showError('Signup request timed out. Backend may still be starting, please try again.');
+            } else {
+                showError('Network error. Please check your connection and try again.');
+            }
         } finally {
             setLoading(false);
         }
