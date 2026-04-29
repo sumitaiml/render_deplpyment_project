@@ -8,6 +8,7 @@ import mimetypes
 from datetime import datetime
 from typing import Optional
 import uuid
+from functools import lru_cache
 from pathlib import Path
 
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Form, Response
@@ -38,10 +39,19 @@ from app.services import (
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/candidates", tags=["Candidates"])
 
-# Initialize services
-resume_parser = ResumeParser()
-skill_extractor = SkillExtractor()
-seniority_inference = SeniorityInference()
+@lru_cache(maxsize=1)
+def get_resume_parser() -> ResumeParser:
+    return ResumeParser()
+
+
+@lru_cache(maxsize=1)
+def get_skill_extractor() -> SkillExtractor:
+    return SkillExtractor()
+
+
+@lru_cache(maxsize=1)
+def get_seniority_inference() -> SeniorityInference:
+    return SeniorityInference()
 
 
 @router.post("/upload-resume", response_model=ParsedResumeResponse)
@@ -76,7 +86,7 @@ async def upload_resume(
         file_format = 'pdf' if file_ext == 'pdf' else ('docx' if file_ext in ['docx', 'doc'] else 'txt')
         
         # Parse resume
-        parsed = resume_parser.parse_resume(
+        parsed = get_resume_parser().parse_resume(
             content,
             file_format,
             name
@@ -87,7 +97,7 @@ async def upload_resume(
         
         # Extract skills
         try:
-            skills_result = skill_extractor.extract_all_skills(parsed)
+            skills_result = get_skill_extractor().extract_all_skills(parsed)
             parsed['skills'] = skills_result['all_skills']
             if not parsed['skills']:
                 parsed['skills'] = []
@@ -97,7 +107,7 @@ async def upload_resume(
         
         # Infer seniority
         try:
-            seniority_result = seniority_inference.infer_seniority(parsed)
+            seniority_result = get_seniority_inference().infer_seniority(parsed)
             # Map seniority levels to valid enum values
             seniority_mapping = {
                 'Intern': 'intern',

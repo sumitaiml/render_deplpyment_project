@@ -6,6 +6,7 @@ Extracts skills, normalizes them, and infers related skills using skill graph
 import re
 import json
 import logging
+import os
 from typing import List, Dict, Tuple, Optional, Set
 import numpy as np
 
@@ -15,6 +16,7 @@ except Exception:  # pragma: no cover - optional dependency fallback
     SentenceTransformer = None
 
 logger = logging.getLogger(__name__)
+RENDER_LIGHTWEIGHT_MODE = os.getenv("RENDER") == "true" or os.getenv("LIGHTWEIGHT_RUNTIME") == "true"
 
 
 class SkillGraph:
@@ -24,7 +26,10 @@ class SkillGraph:
         """Initialize skill graph"""
         self.skills = {}
         self.relationships = {}
-        if SentenceTransformer is not None:
+        if RENDER_LIGHTWEIGHT_MODE:
+            self.sbert = None
+            logger.info("Render lightweight mode enabled; skipping SBERT load in SkillGraph")
+        elif SentenceTransformer is not None:
             try:
                 self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
             except Exception as exc:
@@ -223,7 +228,10 @@ class SkillExtractor:
     def __init__(self, skill_graph: Optional[SkillGraph] = None):
         """Initialize skill extractor"""
         self.skill_graph = skill_graph or SkillGraph()
-        if SentenceTransformer is not None:
+        if RENDER_LIGHTWEIGHT_MODE:
+            self.sbert = None
+            logger.info("Render lightweight mode enabled; skipping SBERT load in SkillExtractor")
+        elif SentenceTransformer is not None:
             try:
                 self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
             except Exception as exc:

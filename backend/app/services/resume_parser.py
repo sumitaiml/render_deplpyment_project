@@ -6,6 +6,7 @@ Extracts structured information from resumes in various formats
 import re
 import base64
 import io
+import os
 import PyPDF2
 from docx import Document
 from typing import Dict, List, Tuple, Optional
@@ -19,6 +20,7 @@ except Exception:  # pragma: no cover - optional dependency fallback
     SentenceTransformer = None
 
 logger = logging.getLogger(__name__)
+RENDER_LIGHTWEIGHT_MODE = os.getenv("RENDER") == "true" or os.getenv("LIGHTWEIGHT_RUNTIME") == "true"
 
 
 class ResumeParser:
@@ -26,21 +28,26 @@ class ResumeParser:
     
     def __init__(self):
         """Initialize parser with NLP models"""
-        try:
-            self.nlp = spacy.load("en_core_web_sm")
-        except:
-            logger.warning("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+        if RENDER_LIGHTWEIGHT_MODE:
             self.nlp = None
-
-        if SentenceTransformer is not None:
-            try:
-                self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
-            except Exception as exc:
-                logger.warning(f"SBERT unavailable, using rule-based parsing only: {exc}")
-                self.sbert = None
-        else:
-            logger.warning("sentence-transformers not installed; using rule-based parsing only")
             self.sbert = None
+            logger.info("Render lightweight mode enabled; skipping spaCy/SBERT load in ResumeParser")
+        else:
+            try:
+                self.nlp = spacy.load("en_core_web_sm")
+            except Exception as exc:
+                logger.warning("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+                self.nlp = None
+
+            if SentenceTransformer is not None:
+                try:
+                    self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
+                except Exception as exc:
+                    logger.warning(f"SBERT unavailable, using rule-based parsing only: {exc}")
+                    self.sbert = None
+            else:
+                logger.warning("sentence-transformers not installed; using rule-based parsing only")
+                self.sbert = None
         self.experience_keywords = [
             "worked", "responsible for", "led", "managed", "developed", "designed",
             "implemented", "maintained", "supported", "coordinated", "supervised",

@@ -8,6 +8,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import uuid
+from functools import lru_cache
 
 from app.schemas import (
     CandidateRankingRequest,
@@ -32,9 +33,14 @@ from app.services import RankingModel, ExplainabilityEngine
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/ranking", tags=["Ranking"])
 
-# Initialize services
-ranking_model = RankingModel()
-explainability_engine = ExplainabilityEngine()
+@lru_cache(maxsize=1)
+def get_ranking_model() -> RankingModel:
+    return RankingModel()
+
+
+@lru_cache(maxsize=1)
+def get_explainability_engine() -> ExplainabilityEngine:
+    return ExplainabilityEngine()
 
 
 @router.post("/rank-candidates")
@@ -115,7 +121,7 @@ async def rank_candidates(
         
         # Rank candidates
         weight_config = request.ranking_weights.model_dump() if request.ranking_weights else None
-        rankings = ranking_model.rank_candidates(candidate_data_list, job_data, weight_config=weight_config)
+        rankings = get_ranking_model().rank_candidates(candidate_data_list, job_data, weight_config=weight_config)
         
         # Generate explanations if requested
         responses = []
@@ -127,7 +133,7 @@ async def rank_candidates(
             
             # Generate explanation
             if request.return_explanations:
-                explanation_data = explainability_engine.generate_ranking_explanation(
+                explanation_data = get_explainability_engine().generate_ranking_explanation(
                     {
                         'id': candidate.id,
                         'name': candidate.name,

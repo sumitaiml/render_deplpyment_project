@@ -5,6 +5,7 @@ Ranks candidates against job descriptions using ML models
 
 import logging
 import re
+import os
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import pickle
@@ -16,6 +17,7 @@ except Exception:  # pragma: no cover - optional dependency fallback
     SentenceTransformer = None
 
 logger = logging.getLogger(__name__)
+RENDER_LIGHTWEIGHT_MODE = os.getenv("RENDER") == "true" or os.getenv("LIGHTWEIGHT_RUNTIME") == "true"
 
 
 class RankingModel:
@@ -38,7 +40,10 @@ class RankingModel:
     
     def __init__(self, model_path: Optional[str] = None):
         """Initialize ranking model"""
-        if SentenceTransformer is not None:
+        if RENDER_LIGHTWEIGHT_MODE:
+            self.sbert = None
+            logger.info("Render lightweight mode enabled; skipping SBERT load in RankingModel")
+        elif SentenceTransformer is not None:
             try:
                 self.sbert = SentenceTransformer("all-MiniLM-L6-v2")
             except Exception as exc:
