@@ -197,19 +197,30 @@ def proxy_api(path: str):
         if key.lower() not in {"host", "content-length", "accept-encoding", "connection"}
     }
 
-    try:
-        upstream_response = requests.request(
-            method=request.method,
-            url=target_url,
-            headers=request_headers,
-            params=request.args,
-            data=request.get_data(),
-            cookies=request.cookies,
-            allow_redirects=False,
-            timeout=180,
-        )
-    except requests.RequestException as exc:
-        return jsonify({"detail": f"Gateway error while contacting backend: {exc}"}), 502
+    last_error: Exception | None = None
+    for attempt in range(1, 13):
+        try:
+            upstream_response = requests.request(
+                method=request.method,
+                url=target_url,
+                headers=request_headers,
+                params=request.args,
+                data=request.get_data(),
+                cookies=request.cookies,
+                allow_redirects=False,
+                timeout=180,
+            )
+            break
+        except requests.ConnectionError as exc:
+            last_error = exc
+            if attempt == 12:
+                return jsonify({"detail": f"Gateway error while contacting backend: {exc}"}), 502
+            time.sleep(1)
+            continue
+        except requests.RequestException as exc:
+            return jsonify({"detail": f"Gateway error while contacting backend: {exc}"}), 502
+    else:
+        return jsonify({"detail": f"Gateway error while contacting backend: {last_error}"}), 502
 
     excluded = {"content-encoding", "content-length", "transfer-encoding", "connection"}
     response_headers = [
