@@ -28,7 +28,7 @@ python-docx==0.8.11
 pypdf==3.17.1
 
 # Vector DB & Embeddings
-faiss-cpu==1.7.4
+faiss-cpu==1.13.2
 pinecone-client==2.2.4
 
 # Database & Cache
