@@ -23,9 +23,9 @@ from flask import Flask, Response, jsonify, redirect, request, send_from_directo
 ROOT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT_DIR / "backend"
 BACKEND_BASE_URL = "http://127.0.0.1:8000"
-GATEWAY_HOST = "127.0.0.1"
+GATEWAY_HOST = "0.0.0.0"
 GATEWAY_PUBLIC_HOST = "localhost"
-GATEWAY_PORT = 5000
+GATEWAY_PORT = 10000
 
 FRONTEND_FILE = "index_professional.html" if (ROOT_DIR / "index_professional.html").exists() else "index.html"
 LOADING_FILE = "loading_dashboard.html"
