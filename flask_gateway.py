@@ -150,6 +150,9 @@ def signup_page() -> Response:
 
 @app.route("/<path:filename>")
 def serve_file(filename: str):
+    if filename.startswith("api/"):
+        return jsonify({"detail": "API route not found."}), 404
+
     candidate = ROOT_DIR / filename
     if candidate.is_file():
         return send_from_directory(ROOT_DIR, filename)
@@ -230,6 +233,13 @@ def proxy_api(path: str):
     ]
 
     return Response(upstream_response.content, upstream_response.status_code, response_headers)
+
+
+@app.errorhandler(404)
+def not_found(error):
+    if request.path.startswith("/api/"):
+        return jsonify({"detail": "API route not found."}), 404
+    return error
 
 
 def main() -> None:

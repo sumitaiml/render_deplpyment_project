@@ -549,6 +549,9 @@
 
     async function parseResponse(res) {
         const text = await res.text();
+        if (text.trim().startsWith('<!DOCTYPE html') || text.trim().startsWith('<html')) {
+            return { detail: 'Backend returned an HTML page instead of JSON. Check the Render logs for the API route response.' };
+        }
         try {
             return JSON.parse(text);
         } catch (_) {
