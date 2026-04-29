@@ -15,6 +15,7 @@ import os
 import subprocess
 import sys
 import time
+import threading
 import webbrowser
 from pathlib import Path
 
@@ -85,6 +86,11 @@ def _start_backend() -> None:
         time.sleep(1)
 
     raise RuntimeError("Backend did not become ready in time.")
+
+
+def _start_backend_async() -> None:
+    thread = threading.Thread(target=_start_backend, daemon=True)
+    thread.start()
 
 
 def _stop_backend() -> None:
@@ -185,18 +191,6 @@ def proxy_api(path: str):
 
 def main() -> None:
     app_url = f"http://{GATEWAY_PUBLIC_HOST}:{GATEWAY_PORT}"
-
-    if _is_gateway_running():
-        print("[gateway] Gateway already running.")
-        print(f"[gateway] Open: {app_url}")
-        try:
-            webbrowser.open(app_url)
-        except Exception:
-            pass
-        return
-
-    _start_backend()
-
     print("[gateway] ------------------------------------------------------------")
     print(f"[gateway] Frontend: {app_url}")
     print(f"[gateway] Gateway health: {app_url}/health")
@@ -204,12 +198,15 @@ def main() -> None:
     print("[gateway] Press Ctrl+C to stop gateway and backend.")
     print("[gateway] ------------------------------------------------------------")
 
-    try:
-        webbrowser.open(app_url)
-    except Exception:
-        pass
+    _start_backend_async()
 
-    app.run(host=GATEWAY_HOST, port=GATEWAY_PORT, debug=False, use_reloader=False)
+    if os.environ.get("RENDER") != "true":
+        try:
+            webbrowser.open(app_url)
+        except Exception:
+            pass
+
+    app.run(host=GATEWAY_HOST, port=GATEWAY_PORT, debug=False, use_reloader=False, threaded=True)
 
 
 if __name__ == "__main__":
