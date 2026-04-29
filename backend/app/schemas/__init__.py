@@ -212,6 +212,9 @@ class RankingScores(BaseModel):
     skill_match_score: float = Field(..., ge=0, le=100)
     experience_match_score: float = Field(..., ge=0, le=100)
     seniority_alignment_score: float = Field(..., ge=0, le=100)
+    must_have_coverage: Optional[float] = Field(None, ge=0.0, le=100.0)
+    nice_to_have_coverage: Optional[float] = Field(None, ge=0.0, le=100.0)
+    evidence_confidence: Optional[float] = Field(None, ge=0.0, le=100.0)
 
 
 class SkillMatchDetail(BaseModel):
@@ -221,6 +224,7 @@ class SkillMatchDetail(BaseModel):
     candidate_proficiency: Optional[ProficiencyLevel] = None
     required_proficiency: ProficiencyLevel
     is_required: bool
+    evidence: List[str] = []
 
 
 class ExplainabilityData(BaseModel):
@@ -261,6 +265,24 @@ class CandidateRankingRequest(BaseModel):
     candidate_ids: Optional[List[str]] = None  # If None, rank all candidates
     apply_bias_mitigation: bool = True
     return_explanations: bool = True
+    ranking_weights: Optional["RankingWeightConfig"] = None
+
+
+class RankingWeightConfig(BaseModel):
+    """Configurable ranking weight controls"""
+    skill_weight: float = Field(0.45, ge=0.0, le=1.0)
+    experience_weight: float = Field(0.35, ge=0.0, le=1.0)
+    seniority_weight: float = Field(0.20, ge=0.0, le=1.0)
+    required_skill_weight: float = Field(0.85, ge=0.0, le=1.0)
+    preferred_skill_weight: float = Field(0.15, ge=0.0, le=1.0)
+    evidence_weight: float = Field(1.0, ge=0.0, le=1.0)
+    experience_strictness: float = Field(1.0, ge=0.5, le=2.0)
+
+    class Config:
+        from_attributes = True
+
+
+CandidateRankingRequest.model_rebuild()
 
 
 class JobRankingResponse(BaseModel):

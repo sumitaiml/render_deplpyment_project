@@ -4,11 +4,15 @@ Handles candidate resume uploads, profile management, and seniority inference
 """
 
 import logging
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Form
-from sqlalchemy.orm import Session
-import uuid
+import mimetypes
 from datetime import datetime
 from typing import Optional
+import uuid
+from pathlib import Path
+
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Form, Response
+from sqlalchemy import asc, desc, or_
+from sqlalchemy.orm import Session
 
 from app.schemas import (
     ResumeUploadRequest,
@@ -18,13 +22,13 @@ from app.schemas import (
     SkillInfo,
     SeniorityLevel as SeniorityEnum
 )
+from app.core import get_db, settings
 from app.models import (
     Candidate as CandidateModel,
     Skill,
     CandidateSkill,
     SeniorityLevel
 )
-from app.core import get_db
 from app.services import (
     ResumeParser,
     SkillExtractor,
@@ -52,11 +56,23 @@ async def upload_resume(
     Extracts: Name, Email, Experience, Education, Skills, Seniority
     """
     try:
+        allowed_extensions = set(settings.ALLOWED_RESUME_FORMATS)
+        file_ext = file.filename.split('.')[-1].lower() if file.filename and '.' in file.filename else 'txt'
+        if file_ext not in allowed_extensions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported resume format: {file_ext}. Allowed formats: {', '.join(sorted(allowed_extensions))}"
+            )
+
         # Read and process file
         content = await file.read()
+        if len(content) > settings.MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Resume file exceeds maximum size of {settings.MAX_FILE_SIZE // (1024 * 1024)} MB"
+            )
         
         # Determine file format from filename
-        file_ext = file.filename.split('.')[-1].lower() if file.filename else 'txt'
         file_format = 'pdf' if file_ext == 'pdf' else ('docx' if file_ext in ['docx', 'doc'] else 'txt')
         
         # Parse resume
@@ -123,6 +139,13 @@ async def upload_resume(
             )
             
             db.add(candidate)
+            db.flush()
+
+            uploads_dir = Path(settings.UPLOAD_DIR).resolve() / "resumes"
+            uploads_dir.mkdir(parents=True, exist_ok=True)
+            stored_resume_path = uploads_dir / f"{candidate.id}.{file_ext}"
+            stored_resume_path.write_bytes(content)
+            candidate.resume_file_path = str(stored_resume_path)
             db.flush()
         except Exception as e:
             logger.error(f"Failed to create candidate: {e}")
@@ -205,8 +228,69 @@ async def upload_resume(
             logger.error(f"Failed to build response: {e}")
             raise HTTPException(status_code=500, detail=f"Response build error: {str(e)}")
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Resume upload error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{candidate_id}/resume")
+async def get_candidate_resume(
+    candidate_id: str,
+    download: bool = False,
+    db: Session = Depends(get_db)
+):
+    """View or download the original uploaded resume for a candidate."""
+    try:
+        candidate = db.query(CandidateModel).filter(CandidateModel.id == candidate_id).first()
+
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+
+        safe_name = (candidate.name or "candidate").strip().replace(" ", "_") or "candidate"
+        stored_path = Path(candidate.resume_file_path) if candidate.resume_file_path else None
+
+        if stored_path and stored_path.exists():
+            content = stored_path.read_bytes()
+            media_type = mimetypes.guess_type(stored_path.name)[0] or "application/octet-stream"
+            filename = stored_path.name
+        else:
+            resume_text = candidate.resume_text or "Resume not available for this candidate."
+            content = resume_text.encode("utf-8")
+            media_type = "text/plain; charset=utf-8"
+            filename = f"{safe_name}_resume.txt"
+
+        disposition = "attachment" if download else "inline"
+        headers = {
+            "Content-Disposition": f'{disposition}; filename="{filename}"'
+        }
+
+        return Response(content=content, media_type=media_type, headers=headers)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching resume for candidate {candidate_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{candidate_id}/resume-text")
+async def get_candidate_resume_text(
+    candidate_id: str,
+    db: Session = Depends(get_db)
+):
+    """Return the parsed resume text for highlighting and evidence display"""
+    try:
+        candidate = db.query(CandidateModel).filter(CandidateModel.id == candidate_id).first()
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+
+        resume_text = candidate.resume_text or ""
+        return {"resume_text": resume_text}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching resume text for candidate {candidate_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -214,11 +298,60 @@ async def upload_resume(
 async def list_candidates(
     skip: int = 0,
     limit: int = 10,
+    search: Optional[str] = None,
+    seniority: Optional[str] = None,
+    min_years_experience: Optional[float] = None,
+    max_years_experience: Optional[float] = None,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
     db: Session = Depends(get_db)
 ):
     """List all candidates with pagination"""
     try:
-        candidates = db.query(CandidateModel).offset(skip).limit(limit).all()
+        query = db.query(CandidateModel)
+
+        if search:
+            search_term = f"%{search.strip()}%"
+            query = query.filter(
+                or_(
+                    CandidateModel.name.ilike(search_term),
+                    CandidateModel.email.ilike(search_term),
+                    CandidateModel.phone.ilike(search_term),
+                )
+            )
+
+        if seniority:
+            seniority_value = seniority.strip().lower()
+            valid_seniorities = {level.value for level in SeniorityLevel}
+            if seniority_value not in valid_seniorities:
+                raise HTTPException(status_code=400, detail=f"Invalid seniority filter: {seniority}")
+            query = query.filter(CandidateModel.inferred_seniority == SeniorityLevel(seniority_value))
+
+        if min_years_experience is not None:
+            query = query.filter(CandidateModel.years_of_experience >= min_years_experience)
+
+        if max_years_experience is not None:
+            query = query.filter(CandidateModel.years_of_experience <= max_years_experience)
+
+        sort_map = {
+            "created_at": CandidateModel.created_at,
+            "name": CandidateModel.name,
+            "years_of_experience": CandidateModel.years_of_experience,
+        }
+
+        sort_key = sort_by.strip().lower()
+        if sort_key not in sort_map:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid sort_by value: {sort_by}. Allowed: {', '.join(sort_map.keys())}"
+            )
+
+        sort_direction = sort_order.strip().lower()
+        if sort_direction not in {"asc", "desc"}:
+            raise HTTPException(status_code=400, detail="sort_order must be 'asc' or 'desc'")
+
+        query = query.order_by(asc(sort_map[sort_key]) if sort_direction == "asc" else desc(sort_map[sort_key]))
+        candidates = query.offset(skip).limit(limit).all()
         
         return [
             CandidateSummary(
@@ -232,6 +365,8 @@ async def list_candidates(
             )
             for c in candidates
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing candidates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -271,6 +406,8 @@ async def get_candidate(candidate_id: str, db: Session = Depends(get_db)):
             projects=candidate.parsed_projects or [],
             created_at=candidate.created_at
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching candidate: {e}")
         raise HTTPException(status_code=500, detail=str(e))

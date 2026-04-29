@@ -108,6 +108,8 @@ async def create_job(
             created_at=job.created_at
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating job: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -138,6 +140,8 @@ async def list_jobs(
             for j in jobs
         ]
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing jobs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -184,6 +188,8 @@ async def get_job_details(job_id: str, db: Session = Depends(get_db)):
             'created_at': job.created_at
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching job: {e}")
         raise HTTPException(status_code=500, detail=str(e))

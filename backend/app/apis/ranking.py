@@ -89,7 +89,9 @@ async def rank_candidates(
                 {
                     'skill': cs.skill.name,
                     'proficiency_level': cs.proficiency_level,
-                    'is_explicit': cs.is_explicit
+                    'is_explicit': cs.is_explicit,
+                    'mentioned_in': cs.mentioned_in,
+                    'confidence_score': cs.confidence_score,
                 }
                 for cs in candidate.candidate_skills
             ]
@@ -99,7 +101,8 @@ async def rank_candidates(
                 'name': candidate.name,
                 'years_of_experience': candidate.years_of_experience,
                 'inferred_seniority': candidate.inferred_seniority.value,
-                'skills': skills
+                'skills': skills,
+                'resume_text': candidate.resume_text or '',
             })
         
         job_data = {
@@ -111,7 +114,8 @@ async def rank_candidates(
         }
         
         # Rank candidates
-        rankings = ranking_model.rank_candidates(candidate_data_list, job_data)
+        weight_config = request.ranking_weights.model_dump() if request.ranking_weights else None
+        rankings = ranking_model.rank_candidates(candidate_data_list, job_data, weight_config=weight_config)
         
         # Generate explanations if requested
         responses = []
@@ -158,26 +162,23 @@ async def rank_candidates(
             # Build response
             if explanation_data:
                 skill_match_details = []
-                for skill_name in explanation_data.get('matched_skills', []):
-                    skill_match_details.append(
-                        SkillMatchDetail(
-                            skill_name=skill_name,
-                            candidate_has=True,
-                            candidate_proficiency=None,
-                            required_proficiency=ProficiencyLevel.INTERMEDIATE,
-                            is_required=True
+                # explanation_data['skill_match_details'] now contains items with evidence
+                for detail in explanation_data.get('skill_match_details', []):
+                    # detail is expected to have 'category' and 'items', where items are dicts { 'skill': name, 'evidence': [...] }
+                    for itm in detail.get('items', []):
+                        skill_name = itm.get('skill') if isinstance(itm, dict) else itm
+                        evidence = itm.get('evidence') if isinstance(itm, dict) else []
+                        candidate_has = skill_name in explanation_data.get('matched_skills', [])
+                        skill_match_details.append(
+                            SkillMatchDetail(
+                                skill_name=skill_name,
+                                candidate_has=candidate_has,
+                                candidate_proficiency=None,
+                                required_proficiency=ProficiencyLevel.INTERMEDIATE,
+                                is_required=(skill_name in explanation_data.get('matched_skills', []) or skill_name in explanation_data.get('missing_skills', [])),
+                                evidence=evidence
+                            )
                         )
-                    )
-                for skill_name in explanation_data.get('missing_skills', []):
-                    skill_match_details.append(
-                        SkillMatchDetail(
-                            skill_name=skill_name,
-                            candidate_has=False,
-                            candidate_proficiency=None,
-                            required_proficiency=ProficiencyLevel.INTERMEDIATE,
-                            is_required=True
-                        )
-                    )
 
                 explanation_response = ExplainabilityData(
                     reason=explanation_data['reason'],
@@ -202,7 +203,10 @@ async def rank_candidates(
                     overall_rank_score=ranking['overall_rank_score'],
                     skill_match_score=ranking['skill_match_score'],
                     experience_match_score=ranking['experience_match_score'],
-                    seniority_alignment_score=ranking['seniority_alignment_score']
+                    seniority_alignment_score=ranking['seniority_alignment_score'],
+                    must_have_coverage=ranking.get('must_have_coverage'),
+                    nice_to_have_coverage=ranking.get('nice_to_have_coverage'),
+                    evidence_confidence=ranking.get('skill_evidence_score'),
                 ),
                 matched_skills=ranking['matched_skills'],
                 missing_skills=ranking['missing_skills'],
@@ -224,6 +228,8 @@ async def rank_candidates(
             request_timestamp=datetime.utcnow()
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error ranking candidates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -258,6 +264,8 @@ async def get_job_rankings(job_id: str, db: Session = Depends(get_db)):
             ]
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching rankings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -294,6 +302,8 @@ async def get_ranking_details(ranking_id: str, db: Session = Depends(get_db)):
             'created_at': ranking.created_at
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching ranking details: {e}")
         raise HTTPException(status_code=500, detail=str(e))

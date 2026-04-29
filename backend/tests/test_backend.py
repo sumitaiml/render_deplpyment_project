@@ -202,6 +202,46 @@ class TestRankingModel:
         assert score > 0
         assert len(matched) >= 2
         assert score <= 100
+
+    def test_compute_skill_match_score_semantic_similarity(self):
+        """Test semantic skill matching when the resume uses different wording."""
+        self.ranker.sbert = object()
+
+        def fake_similarity(candidate_skill, job_skill):
+            candidate_skill = candidate_skill.lower()
+            job_skill = job_skill.lower()
+
+            if 'rest api' in candidate_skill and 'api development' in job_skill:
+                return 0.93
+            if 'docker' in candidate_skill and 'containerization' in job_skill:
+                return 0.90
+            return 0.1
+
+        self.ranker._semantic_similarity = fake_similarity
+
+        candidate_skills = [
+            {'skill': 'REST API', 'proficiency_level': 'advanced'},
+            {'skill': 'Docker', 'proficiency_level': 'advanced'}
+        ]
+
+        required_skills = [
+            {'skill': 'API development', 'importance': 1.0}
+        ]
+
+        preferred_skills = [
+            {'skill': 'Containerization', 'importance': 0.5}
+        ]
+
+        score, matched, missing = self.ranker.compute_skill_match_score(
+            candidate_skills,
+            required_skills,
+            preferred_skills
+        )
+
+        assert score >= 85.0
+        assert 'api development' in matched
+        assert 'containerization' in matched
+        assert missing == []
     
     def test_compute_experience_match_score(self):
         """Test experience matching"""
@@ -274,6 +314,157 @@ class TestRankingModel:
         assert rankings[0]['rank_position'] == 1
         assert rankings[1]['rank_position'] == 2
         assert rankings[0]['overall_rank_score'] >= rankings[1]['overall_rank_score']
+
+    def test_compute_skill_match_score_with_evidence(self):
+        """Test evidence snippets are returned when requested"""
+        candidate_skills = [
+            {'skill': 'Python', 'proficiency_level': 'expert'},
+            {'skill': 'Docker', 'proficiency_level': 'advanced'}
+        ]
+
+        required_skills = [
+            {'skill': 'Python', 'importance': 1.0}
+        ]
+
+        preferred_skills = [
+            {'skill': 'Docker', 'importance': 0.5}
+        ]
+
+        resume_text = """
+        Experienced engineer working with Python and Docker.
+        Implemented containerized deployments using Docker.
+        """
+
+        score, matched, missing, evidence = self.ranker.compute_skill_match_score(
+            candidate_skills,
+            required_skills,
+            preferred_skills,
+            candidate_resume_text=resume_text,
+            return_evidence=True
+        )
+
+        assert score > 0
+        assert 'python' in matched
+        assert 'docker' in matched
+        assert isinstance(evidence, dict)
+        assert 'python' in evidence or 'docker' in evidence
+
+    def test_compute_skill_match_score_prefers_stronger_evidence_sources(self):
+        """Test that the same skill scores higher when it is evidenced in work experience."""
+        required_skills = [
+            {'skill': 'Python', 'importance': 1.0}
+        ]
+
+        strong_candidate_skills = [
+            {'skill': 'Python', 'proficiency_level': 'expert', 'mentioned_in': 'experience', 'is_explicit': True, 'confidence_score': 0.95}
+        ]
+
+        weak_candidate_skills = [
+            {'skill': 'Python', 'proficiency_level': 'expert', 'mentioned_in': 'skills_section', 'is_explicit': True, 'confidence_score': 0.95}
+        ]
+
+        strong_score, _, _ = self.ranker.compute_skill_match_score(
+            strong_candidate_skills,
+            required_skills,
+            []
+        )
+        weak_score, _, _ = self.ranker.compute_skill_match_score(
+            weak_candidate_skills,
+            required_skills,
+            []
+        )
+
+        assert strong_score > weak_score
+
+    def test_compute_skill_match_score_prioritizes_required_skills(self):
+        """Test that must-have skills contribute more than nice-to-have skills."""
+        candidate_required_only = [
+            {'skill': 'Python', 'proficiency_level': 'expert'}
+        ]
+
+        candidate_preferred_only = [
+            {'skill': 'React', 'proficiency_level': 'advanced'}
+        ]
+
+        required_skills = [
+            {'skill': 'Python', 'importance': 1.0}
+        ]
+
+        preferred_skills = [
+            {'skill': 'React', 'importance': 0.5}
+        ]
+
+        required_score, _, _ = self.ranker.compute_skill_match_score(
+            candidate_required_only,
+            required_skills,
+            preferred_skills
+        )
+
+        preferred_score, _, _ = self.ranker.compute_skill_match_score(
+            candidate_preferred_only,
+            required_skills,
+            preferred_skills
+        )
+
+        assert required_score > preferred_score
+
+    def test_rank_candidates_respects_weight_profiles(self):
+        """Test that changing the weight profile can change the top-ranked candidate."""
+        candidates = [
+            {
+                'id': 'cand_skill',
+                'name': 'Skill Heavy',
+                'years_of_experience': 2.0,
+                'inferred_seniority': 'junior',
+                'skills': [{'skill': 'Python', 'proficiency_level': 'expert'}]
+            },
+            {
+                'id': 'cand_experience',
+                'name': 'Experience Heavy',
+                'years_of_experience': 8.0,
+                'inferred_seniority': 'senior',
+                'skills': [{'skill': 'Docker', 'proficiency_level': 'advanced'}]
+            }
+        ]
+
+        job = {
+            'title': 'Python Engineer',
+            'job_level': 'senior',
+            'years_of_experience_required': 5.0,
+            'required_skills': [{'skill': 'Python', 'importance': 1.0}],
+            'preferred_skills': []
+        }
+
+        skill_heavy_rankings = self.ranker.rank_candidates(
+            candidates,
+            job,
+            weight_config={
+                'skill_weight': 0.7,
+                'experience_weight': 0.2,
+                'seniority_weight': 0.1,
+                'required_skill_weight': 0.9,
+                'preferred_skill_weight': 0.1,
+                'evidence_weight': 1.0,
+                'experience_strictness': 1.0,
+            }
+        )
+
+        experience_heavy_rankings = self.ranker.rank_candidates(
+            candidates,
+            job,
+            weight_config={
+                'skill_weight': 0.2,
+                'experience_weight': 0.7,
+                'seniority_weight': 0.1,
+                'required_skill_weight': 0.9,
+                'preferred_skill_weight': 0.1,
+                'evidence_weight': 1.0,
+                'experience_strictness': 1.0,
+            }
+        )
+
+        assert skill_heavy_rankings[0]['candidate_id'] == 'cand_skill'
+        assert experience_heavy_rankings[0]['candidate_id'] == 'cand_experience'
 
 
 class TestExplainabilityEngine:

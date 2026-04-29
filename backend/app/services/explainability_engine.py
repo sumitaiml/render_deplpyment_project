@@ -37,7 +37,9 @@ class ExplainabilityEngine:
             'reason': '',
             'matched_skills': ranking.get('matched_skills', []),
             'missing_skills': ranking.get('missing_skills', []),
+            'critical_missing_skills': ranking.get('critical_missing_skills', []),
             'skill_match_details': [],
+            'skill_evidence': ranking.get('skill_evidence', {}),
             'experience_analysis': '',
             'seniority_reasoning': '',
             'overall_summary': '',
@@ -57,14 +59,29 @@ class ExplainabilityEngine:
             explanation['reason'] = f"Moderate candidate (#{rank_position}). Has potential but lacks some key qualifications."
         else:
             explanation['reason'] = f"Candidate ranked #{rank_position}. Significant gaps in required skills or experience."
+
+        critical_missing = ranking.get('critical_missing_skills', []) or []
+        if critical_missing:
+            explanation['reason'] += f" Missing must-have skills: {', '.join(critical_missing[:3])}."
         
         # Skill analysis
         skill_explanation = self._generate_skill_explanation(
             ranking.get('matched_skills', []),
             ranking.get('missing_skills', []),
-            ranking['skill_match_score']
+            ranking['skill_match_score'],
+            ranking.get('critical_missing_skills', [])
         )
-        explanation['skill_match_details'] = skill_explanation['details']
+        # Attach evidence snippets to skill details when available
+        skill_details = skill_explanation['details']
+        evidence_map = ranking.get('skill_evidence', {}) or explanation.get('skill_evidence', {})
+        for d in skill_details:
+            items_with_evidence = []
+            for item in d.get('items', []):
+                ev = evidence_map.get(item, [])
+                items_with_evidence.append({'skill': item, 'evidence': ev})
+            d['items'] = items_with_evidence
+
+        explanation['skill_match_details'] = skill_details
         explanation['highlighted_strengths'].extend(skill_explanation['strengths'])
         explanation['areas_for_growth'].extend(skill_explanation['gaps'])
         
@@ -102,7 +119,8 @@ class ExplainabilityEngine:
     
     def _generate_skill_explanation(self, matched_skills: List[str], 
                                    missing_skills: List[str],
-                                   skill_score: float) -> Dict:
+                                   skill_score: float,
+                                   critical_missing_skills: Optional[List[str]] = None) -> Dict:
         """Generate skill-specific explanation"""
         details = []
         strengths = []
@@ -135,6 +153,17 @@ class ExplainabilityEngine:
             
             gap_msg = f"Could develop {len(missing_skills)} additional skills mentioned in job posting"
             gaps.append(gap_msg)
+
+        if critical_missing_skills:
+            critical_str = ', '.join(critical_missing_skills[:3])
+            if len(critical_missing_skills) > 3:
+                critical_str += f" and {len(critical_missing_skills) - 3} others"
+            gaps.append(f"Missing must-have skills: {critical_str}")
+            details.append({
+                'category': 'Critical Missing Skills',
+                'items': critical_missing_skills,
+                'summary': f"Missing must-have skills: {critical_str}"
+            })
         
         # Skill score interpretation
         if skill_score >= 80:

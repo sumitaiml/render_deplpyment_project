@@ -418,6 +418,7 @@
 
         input[type="text"],
         input[type="email"],
+        input[type="number"],
         input[type="file"],
         textarea,
         select {
@@ -430,6 +431,14 @@
             font-family: inherit;
             background: rgba(8, 12, 20, 0.6);
             color: #e2e8f0;
+            appearance: none;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         input::placeholder, textarea::placeholder {
@@ -764,6 +773,169 @@
             border: 1px solid var(--border);
         }
 
+        .weight-panel {
+            background: linear-gradient(180deg, rgba(0, 229, 255, 0.05), rgba(13, 21, 32, 0.96));
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.04);
+        }
+
+        .weight-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+
+        .weight-panel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(0, 229, 255, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 255, 0.18);
+            font-size: 0.76em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .weight-panel-subtitle {
+            color: #9ab1c9;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .weight-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .weight-card {
+            background: rgba(8, 12, 20, 0.62);
+            border: 1px solid rgba(0, 229, 255, 0.12);
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .weight-card-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.88em;
+            font-weight: 700;
+            color: #dbe7f6;
+        }
+
+        .weight-value {
+            color: var(--primary);
+            font-size: 0.8em;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            background: rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            padding: 4px 8px;
+            border-radius: 999px;
+        }
+
+        .weight-slider {
+            width: 100%;
+            accent-color: var(--primary);
+            height: 4px;
+            cursor: pointer;
+        }
+
+        .weight-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 8px;
+            color: #7f95ad;
+            font-size: 0.74em;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .weight-aux-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .weight-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .weight-actions .btn-secondary,
+        .weight-actions .btn-ghost {
+            width: auto;
+            min-width: 170px;
+            padding: 11px 14px;
+            font-size: 0.78em;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.16), rgba(0, 185, 212, 0.28));
+            color: #dff9ff;
+            border: 1px solid rgba(0, 229, 255, 0.22);
+            box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.05);
+        }
+
+        .btn-ghost {
+            background: rgba(8, 12, 20, 0.55);
+            color: #a7bbd1;
+            border: 1px solid rgba(0, 229, 255, 0.14);
+        }
+
+        .btn-secondary:hover,
+        .btn-ghost:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(0, 229, 255, 0.09);
+        }
+
+        .weight-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .weight-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 229, 255, 0.16);
+            background: rgba(0, 229, 255, 0.06);
+            color: #d6e9ff;
+            font-size: 0.76em;
+            font-weight: 700;
+            letter-spacing: 0.35px;
+        }
+
+        .weight-chip strong {
+            color: var(--primary);
+        }
+
         .rank-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -920,6 +1092,153 @@
             font-weight: 700;
             margin-top: 15px;
             width: 100%;
+        }
+
+        .card-action-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-resume {
+            background: rgba(0, 229, 255, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 255, 0.22);
+            padding: 12px 16px;
+            font-size: 0.8em;
+            font-weight: 700;
+            width: 100%;
+            line-height: 1.4;
+        }
+
+        .btn-resume:hover {
+            background: rgba(0, 229, 255, 0.14);
+            border-color: rgba(0, 229, 255, 0.35);
+        }
+
+        .evidence-snippet {
+            background: rgba(0, 229, 255, 0.04);
+            border: 1px solid rgba(0, 229, 255, 0.1);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin: 6px 0;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.85em;
+            color: #c8d6e5;
+            line-height: 1.6;
+            position: relative;
+            border-left: 3px solid rgba(0, 229, 255, 0.3);
+            transition: all 0.25s ease;
+        }
+
+        .evidence-snippet:hover {
+            background: rgba(0, 229, 255, 0.07);
+            border-color: rgba(0, 229, 255, 0.25);
+            border-left-color: var(--primary);
+        }
+
+        .evidence-snippet mark {
+            background: rgba(0, 229, 255, 0.2);
+            color: var(--primary);
+            border-radius: 3px;
+            padding: 1px 4px;
+            font-weight: 700;
+        }
+
+        .evidence-panel {
+            margin-top: 16px;
+            border: 1px solid rgba(0, 229, 255, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(8, 12, 20, 0.6);
+        }
+
+        .evidence-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            cursor: pointer;
+            background: rgba(0, 229, 255, 0.05);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        .evidence-panel-header:hover {
+            background: rgba(0, 229, 255, 0.09);
+        }
+
+        .evidence-panel-title {
+            font-size: 0.88em;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .evidence-panel-toggle {
+            font-size: 0.8em;
+            color: var(--text-light);
+            transition: transform 0.3s ease;
+        }
+
+        .evidence-panel.open .evidence-panel-toggle {
+            transform: rotate(180deg);
+        }
+
+        .evidence-panel-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+            padding: 0 16px;
+        }
+
+        .evidence-panel.open .evidence-panel-body {
+            max-height: 600px;
+            padding: 14px 16px;
+            overflow-y: auto;
+        }
+
+        .evidence-skill-group {
+            margin-bottom: 14px;
+        }
+
+        .evidence-skill-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .evidence-skill-label {
+            font-size: 0.82em;
+            font-weight: 700;
+            color: #00e5a0;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .evidence-skill-label.missing-skill {
+            color: #00cfff;
+        }
+
+        .evidence-no-data {
+            font-size: 0.82em;
+            color: var(--text-light);
+            font-style: italic;
+            padding: 4px 0;
+        }
+
+        .open-resume-link {
+            margin-left: 8px;
+            font-size: 0.85em;
+            color: #00aaff;
+            text-decoration: underline;
         }
 
         /* === Modals === */
@@ -1405,6 +1724,61 @@
             color: var(--text-light);
         }
 
+        .candidate-filters {
+            display: grid;
+            grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(120px, 0.8fr)) auto auto;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .candidate-filters .form-group {
+            margin-bottom: 0;
+        }
+
+        .btn-secondary {
+            background: rgba(0, 229, 255, 0.06);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 255, 0.18);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 229, 255, 0.12);
+            border-color: rgba(0, 229, 255, 0.32);
+        }
+
+        @media (max-width: 1100px) {
+            .candidate-filters {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .candidate-filters .btn-primary,
+            .candidate-filters .btn-secondary {
+                width: 100%;
+            }
+
+            .weight-grid,
+            .weight-aux-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .weight-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .weight-actions .btn-secondary,
+            .weight-actions .btn-ghost {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+
         .empty-state-icon {
             font-size: 3em;
             margin-bottom: 15px;
@@ -1529,6 +1903,48 @@
                         <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                         Uploaded Candidates
                     </div>
+                    <form id="candidateFiltersForm" class="candidate-filters">
+                        <div class="form-group">
+                            <label>Search</label>
+                            <input type="text" id="candidateSearch" placeholder="Name, email, or phone">
+                        </div>
+                        <div class="form-group">
+                            <label>Seniority</label>
+                            <select id="candidateSeniorityFilter">
+                                <option value="">All levels</option>
+                                <option value="intern">Intern</option>
+                                <option value="junior">Junior</option>
+                                <option value="mid_level">Mid-Level</option>
+                                <option value="senior">Senior</option>
+                                <option value="lead">Lead</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Min Exp.</label>
+                            <input type="number" id="candidateMinExp" min="0" step="0.5" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Exp.</label>
+                            <input type="number" id="candidateMaxExp" min="0" step="0.5" placeholder="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Sort By</label>
+                            <select id="candidateSortBy">
+                                <option value="created_at">Newest</option>
+                                <option value="name">Name</option>
+                                <option value="years_of_experience">Experience</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Order</label>
+                            <select id="candidateSortOrder">
+                                <option value="desc">Descending</option>
+                                <option value="asc">Ascending</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Search</button>
+                        <button type="button" class="btn-secondary" onclick="resetCandidateFilters()">Reset</button>
+                    </form>
                     <div id="candidatesList" class="success-list"></div>
                     <div id="noCandidates" class="empty-state">
                         <div class="empty-state-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
@@ -1571,8 +1987,12 @@
                             <input type="text" id="jobExperience" placeholder="5" required>
                         </div>
                         <div class="form-group">
-                            <label>Required Skills (comma-separated)</label>
+                            <label>Must-have Skills (comma-separated)</label>
                             <input type="text" id="jobSkills" placeholder="Python, JavaScript, Docker" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred Skills (optional)</label>
+                            <input type="text" id="jobPreferredSkills" placeholder="AWS, Kubernetes, TypeScript">
                         </div>
                         <button type="submit" class="btn-primary">Create Job</button>
                     </form>
@@ -1599,6 +2019,81 @@
                 <div class="card-title">
                     <span class="card-title-icon"><svg style="width:1em;height:1em;vertical-align:-0.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
                     Rank Candidates for Job
+                </div>
+                <div class="weight-panel">
+                    <div class="weight-panel-header">
+                        <span>Ranking Control Panel</span>
+                        <span class="weight-panel-badge">Smart weights</span>
+                    </div>
+                    <div class="weight-panel-subtitle">
+                        Tune how the ranking engine balances skill evidence, experience, and seniority.
+                        Use <strong>Auto Balance</strong> for a job-aware starting point, then refine manually.
+                    </div>
+                    <div class="weight-grid">
+                        <div class="weight-card">
+                            <div class="weight-card-title">
+                                <span>Skill Weight</span>
+                                <span class="weight-value" id="skillWeightValue">45%</span>
+                            </div>
+                            <input id="skillWeight" class="weight-slider" type="range" min="20" max="70" value="45" oninput="updateWeightValue('skillWeightValue', this.value, '%'); updateWeightSummary()">
+                            <div class="weight-meta"><span>Lower</span><span>Higher</span></div>
+                        </div>
+                        <div class="weight-card">
+                            <div class="weight-card-title">
+                                <span>Experience Weight</span>
+                                <span class="weight-value" id="experienceWeightValue">35%</span>
+                            </div>
+                            <input id="experienceWeight" class="weight-slider" type="range" min="10" max="60" value="35" oninput="updateWeightValue('experienceWeightValue', this.value, '%'); updateWeightSummary()">
+                            <div class="weight-meta"><span>Lower</span><span>Higher</span></div>
+                        </div>
+                        <div class="weight-card">
+                            <div class="weight-card-title">
+                                <span>Seniority Weight</span>
+                                <span class="weight-value" id="seniorityWeightValue">20%</span>
+                            </div>
+                            <input id="seniorityWeight" class="weight-slider" type="range" min="10" max="40" value="20" oninput="updateWeightValue('seniorityWeightValue', this.value, '%'); updateWeightSummary()">
+                            <div class="weight-meta"><span>Lower</span><span>Higher</span></div>
+                        </div>
+                    </div>
+                    <div class="weight-aux-grid">
+                        <div class="weight-card">
+                            <div class="weight-card-title">
+                                <span>Must-have Skill Bias</span>
+                                <span class="weight-value" id="requiredSkillWeightValue">85%</span>
+                            </div>
+                            <input id="requiredSkillWeight" class="weight-slider" type="range" min="50" max="95" value="85" oninput="updateWeightValue('requiredSkillWeightValue', this.value, '%'); updateWeightSummary()">
+                            <div class="weight-meta"><span>Required skills dominate</span><span>Balanced</span></div>
+                        </div>
+                        <div class="weight-card">
+                            <div class="weight-card-title">
+                                <span>Preferred Skill Bias</span>
+                                <span class="weight-value" id="preferredSkillWeightValue">15%</span>
+                            </div>
+                            <input id="preferredSkillWeight" class="weight-slider" type="range" min="5" max="50" value="15" oninput="updateWeightValue('preferredSkillWeightValue', this.value, '%'); updateWeightSummary()">
+                            <div class="weight-meta"><span>Light boost</span><span>Stronger boost</span></div>
+                        </div>
+                        <div class="weight-card">
+                            <div class="weight-card-title">
+                                <span>Evidence Confidence</span>
+                                <span class="weight-value" id="evidenceWeightValue">100%</span>
+                            </div>
+                            <input id="evidenceWeight" class="weight-slider" type="range" min="50" max="100" value="100" oninput="updateWeightValue('evidenceWeightValue', this.value, '%'); updateWeightSummary()">
+                            <div class="weight-meta"><span>Ignore weak evidence</span><span>Full evidence focus</span></div>
+                        </div>
+                        <div class="weight-card">
+                            <div class="weight-card-title">
+                                <span>Experience Strictness</span>
+                                <span class="weight-value" id="experienceStrictnessValue">1.0x</span>
+                            </div>
+                            <input id="experienceStrictness" class="weight-slider" type="range" min="50" max="200" value="100" oninput="updateWeightValue('experienceStrictnessValue', (this.value / 100).toFixed(1), 'x'); updateWeightSummary()">
+                            <div class="weight-meta"><span>Lenient</span><span>Strict</span></div>
+                        </div>
+                    </div>
+                    <div class="weight-actions">
+                        <button type="button" class="btn-secondary" onclick="applyRecommendedWeights()">Auto Balance</button>
+                        <button type="button" class="btn-ghost" onclick="resetWeightControls()">Reset Defaults</button>
+                    </div>
+                    <div class="weight-summary" id="weightSummary"></div>
                 </div>
                 <div class="rank-grid">
                     <div class="form-group">
@@ -1696,6 +2191,16 @@
         </div>
     </div>
 
+        <div id="resumeModal" class="modal">
+            <div class="modal-content resume-modal-content">
+                <div class="explanation-header">
+                    <div class="explanation-title">Resume Viewer</div>
+                    <button class="close-btn" onclick="closeResumeModal()">&times;</button>
+                </div>
+                <div id="resumeContent" style="max-height:60vh;overflow:auto;padding:12px;font-family:monospace;white-space:pre-wrap;"></div>
+            </div>
+        </div>
+
     <!-- Particle Background Animation -->
     <script>
         (function() {
@@ -1767,6 +2272,30 @@
         let allCandidates = [];
         let allJobs = [];
         let currentRankingData = null;
+
+        function getCandidateFilterParams() {
+            const params = new URLSearchParams();
+            const search = document.getElementById('candidateSearch')?.value.trim();
+            const seniority = document.getElementById('candidateSeniorityFilter')?.value;
+            const minExp = document.getElementById('candidateMinExp')?.value;
+            const maxExp = document.getElementById('candidateMaxExp')?.value;
+            const sortBy = document.getElementById('candidateSortBy')?.value || 'created_at';
+            const sortOrder = document.getElementById('candidateSortOrder')?.value || 'desc';
+
+            if (search) params.append('search', search);
+            if (seniority) params.append('seniority', seniority);
+            if (minExp !== '') params.append('min_years_experience', minExp);
+            if (maxExp !== '') params.append('max_years_experience', maxExp);
+            params.append('sort_by', sortBy);
+            params.append('sort_order', sortOrder);
+            return params;
+        }
+
+        function resetCandidateFilters() {
+            const form = document.getElementById('candidateFiltersForm');
+            if (form) form.reset();
+            loadCandidates();
+        }
 
         // Tab Switching
         function switchTab(tabName) {
@@ -1934,7 +2463,12 @@
             const level = document.getElementById('jobLevel').value;
             const experience = document.getElementById('jobExperience').value;
             const skills = document.getElementById('jobSkills').value;
+            const preferredSkillsRaw = document.getElementById('jobPreferredSkills').value;
             const requiredSkills = skills
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+            const preferredSkills = preferredSkillsRaw
                 .split(',')
                 .map(s => s.trim())
                 .filter(s => s.length > 0);
@@ -1951,7 +2485,7 @@
                         job_level: level,
                         years_of_experience_required: parseFloat(experience),
                         required_skills: requiredSkills,
-                        preferred_skills: []
+                        preferred_skills: preferredSkills
                     })
                 });
 
@@ -1965,6 +2499,7 @@
                         {
                             'Job ID': jobId !== 'N/A' ? `${jobId.substring(0, 8)}...` : 'N/A',
                             'Skills': requiredSkills.length,
+                            'Preferred': preferredSkills.length,
                             'Status': 'Active'
                         });
                     document.getElementById('jobForm').reset();
@@ -1978,6 +2513,172 @@
             }
         });
 
+        function updateWeightValue(elementId, value, suffix) {
+            const el = document.getElementById(elementId);
+            if (el) el.textContent = `${value}${suffix || ''}`;
+        }
+
+        function readWeightConfig() {
+            const skillWeight = Number(document.getElementById('skillWeight')?.value ?? 45);
+            const experienceWeight = Number(document.getElementById('experienceWeight')?.value ?? 35);
+            const seniorityWeight = Number(document.getElementById('seniorityWeight')?.value ?? 20);
+            const requiredSkillWeight = Number(document.getElementById('requiredSkillWeight')?.value ?? 85);
+            const preferredSkillWeight = Number(document.getElementById('preferredSkillWeight')?.value ?? 15);
+            const evidenceWeight = Number(document.getElementById('evidenceWeight')?.value ?? 100);
+            const experienceStrictness = Number(document.getElementById('experienceStrictness')?.value ?? 100);
+
+            return {
+                skill_weight: skillWeight / 100,
+                experience_weight: experienceWeight / 100,
+                seniority_weight: seniorityWeight / 100,
+                required_skill_weight: requiredSkillWeight / 100,
+                preferred_skill_weight: preferredSkillWeight / 100,
+                evidence_weight: evidenceWeight / 100,
+                experience_strictness: experienceStrictness / 100
+            };
+        }
+
+        function getWeightProfileLabel(config) {
+            const skill = Math.round((config.skill_weight || 0) * 100);
+            const experience = Math.round((config.experience_weight || 0) * 100);
+            const seniority = Math.round((config.seniority_weight || 0) * 100);
+
+            if (experience >= 40) return 'Experience-led';
+            if (skill >= 55) return 'Skill-led';
+            if (seniority >= 25) return 'Seniority-aware';
+            return 'Balanced';
+        }
+
+        function updateWeightSummary() {
+            const config = readWeightConfig();
+            const summary = document.getElementById('weightSummary');
+            if (!summary) return;
+
+            const profileLabel = getWeightProfileLabel(config);
+            summary.innerHTML = `
+                <span class="weight-chip"><strong>${profileLabel}</strong> profile</span>
+                <span class="weight-chip">Skill <strong>${Math.round(config.skill_weight * 100)}%</strong></span>
+                <span class="weight-chip">Experience <strong>${Math.round(config.experience_weight * 100)}%</strong></span>
+                <span class="weight-chip">Seniority <strong>${Math.round(config.seniority_weight * 100)}%</strong></span>
+                <span class="weight-chip">Must-have <strong>${Math.round(config.required_skill_weight * 100)}%</strong></span>
+                <span class="weight-chip">Preferred <strong>${Math.round(config.preferred_skill_weight * 100)}%</strong></span>
+                <span class="weight-chip">Evidence <strong>${Math.round(config.evidence_weight * 100)}%</strong></span>
+                <span class="weight-chip">Strictness <strong>${config.experience_strictness.toFixed(1)}x</strong></span>
+            `;
+        }
+
+        function getRecommendedWeightConfig(jobId) {
+            const job = allJobs.find(j => j.id === jobId) || {};
+            const level = String(job.job_level || '').toLowerCase().replace('-', '_');
+            const requiredCount = Number(job.required_skills_count || 0);
+            const preferredCount = Number(job.preferred_skills_count || 0);
+
+            let config = {
+                skill_weight: 0.45,
+                experience_weight: 0.35,
+                seniority_weight: 0.20,
+                required_skill_weight: 0.85,
+                preferred_skill_weight: 0.15,
+                evidence_weight: 1.0,
+                experience_strictness: 1.0
+            };
+
+            if (level === 'intern' || level === 'junior') {
+                config = {
+                    skill_weight: 0.55,
+                    experience_weight: 0.20,
+                    seniority_weight: 0.25,
+                    required_skill_weight: 0.90,
+                    preferred_skill_weight: 0.10,
+                    evidence_weight: 1.0,
+                    experience_strictness: 0.75
+                };
+            } else if (level === 'senior' || level === 'lead') {
+                config = {
+                    skill_weight: 0.40,
+                    experience_weight: 0.40,
+                    seniority_weight: 0.20,
+                    required_skill_weight: 0.88,
+                    preferred_skill_weight: 0.12,
+                    evidence_weight: 1.0,
+                    experience_strictness: 1.35
+                };
+            } else if (level === 'mid_level') {
+                config = {
+                    skill_weight: 0.48,
+                    experience_weight: 0.30,
+                    seniority_weight: 0.22,
+                    required_skill_weight: 0.85,
+                    preferred_skill_weight: 0.15,
+                    evidence_weight: 1.0,
+                    experience_strictness: 1.0
+                };
+            }
+
+            if (preferredCount > requiredCount && preferredCount > 0) {
+                config.required_skill_weight = 0.72;
+                config.preferred_skill_weight = 0.28;
+                config.skill_weight = Math.max(config.skill_weight, 0.50);
+                config.experience_weight = Math.min(config.experience_weight, 0.30);
+            }
+
+            if (requiredCount >= 6) {
+                config.required_skill_weight = Math.max(config.required_skill_weight, 0.90);
+                config.preferred_skill_weight = Math.min(config.preferred_skill_weight, 0.10);
+                config.evidence_weight = 1.0;
+            }
+
+            return config;
+        }
+
+        function applyWeightConfig(config) {
+            const safe = config || {};
+            const setSlider = (id, value, suffixId, scale = 100, formatter = null) => {
+                const slider = document.getElementById(id);
+                if (!slider) return;
+                const normalizedValue = Math.round(Number(value ?? 0) * scale);
+                slider.value = String(normalizedValue);
+                const label = document.getElementById(suffixId);
+                if (label) {
+                    const displayValue = typeof formatter === 'function'
+                        ? formatter(normalizedValue)
+                        : (scale === 100 ? `${normalizedValue}%` : `${(normalizedValue / 100).toFixed(1)}x`);
+                    label.textContent = displayValue;
+                }
+            };
+
+            setSlider('skillWeight', safe.skill_weight ?? 0.45, 'skillWeightValue');
+            setSlider('experienceWeight', safe.experience_weight ?? 0.35, 'experienceWeightValue');
+            setSlider('seniorityWeight', safe.seniority_weight ?? 0.20, 'seniorityWeightValue');
+            setSlider('requiredSkillWeight', safe.required_skill_weight ?? 0.85, 'requiredSkillWeightValue');
+            setSlider('preferredSkillWeight', safe.preferred_skill_weight ?? 0.15, 'preferredSkillWeightValue');
+            setSlider('evidenceWeight', safe.evidence_weight ?? 1.0, 'evidenceWeightValue');
+            setSlider('experienceStrictness', safe.experience_strictness ?? 1.0, 'experienceStrictnessValue', 100, (normalizedValue) => `${(normalizedValue / 100).toFixed(1)}x`);
+            updateWeightSummary();
+        }
+
+        function applyRecommendedWeights() {
+            const jobId = document.getElementById('selectJob')?.value;
+            if (!jobId) {
+                showError('rankError', 'Select a job first to generate a recommendation.');
+                return;
+            }
+
+            applyWeightConfig(getRecommendedWeightConfig(jobId));
+        }
+
+        function resetWeightControls() {
+            applyWeightConfig({
+                skill_weight: 0.45,
+                experience_weight: 0.35,
+                seniority_weight: 0.20,
+                required_skill_weight: 0.85,
+                preferred_skill_weight: 0.15,
+                evidence_weight: 1.0,
+                experience_strictness: 1.0
+            });
+        }
+
         async function rankCandidates() {
             const jobId = document.getElementById('selectJob').value;
             
@@ -1985,6 +2686,8 @@
                 showError('rankError', 'Please select a job');
                 return;
             }
+
+            const rankingWeights = readWeightConfig();
 
             showLoadingWithAnimation('Analyzing candidates and generating rankings...');
 
@@ -1995,7 +2698,8 @@
                     body: JSON.stringify({
                         job_id: jobId,
                         return_explanations: true,
-                        apply_bias_mitigation: true
+                        apply_bias_mitigation: true,
+                        ranking_weights: rankingWeights
                     })
                 });
 
@@ -2007,11 +2711,13 @@
                     displayRankingResults(data);
                     const topScoreRaw = data.rankings?.[0]?.overall_rank_score ?? data.rankings?.[0]?.ranking_scores?.overall_rank_score ?? null;
                     const topScore = topScoreRaw !== null ? Number(topScoreRaw) : null;
+                    const profileLabel = getWeightProfileLabel(rankingWeights);
                     showSuccessModal('Ranking Complete!',
                         `Successfully ranked ${data.total_candidates_ranked} candidate(s)`,
                         {
                             'Top Candidate': data.rankings[0]?.candidate_name || 'N/A',
                             'Top Score': (topScore !== null && !Number.isNaN(topScore)) ? topScore.toFixed(1) : 'N/A',
+                            'Weight Profile': profileLabel,
                             'Analysis Status': 'Complete'
                         });
                 } else {
@@ -2204,6 +2910,93 @@
             }
         }
 
+        function highlightKeywordInSnippet(snippetText, skillName) {
+            if (!snippetText || !skillName) return escapeHtml(snippetText || '');
+            const escaped = escapeHtml(snippetText);
+            const tokens = skillName.split(/\s+/).filter(t => t.length > 1);
+            if (tokens.length === 0) return escaped;
+            const pattern = new RegExp('(' + tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+            return escaped.replace(pattern, '<mark>$1</mark>');
+        }
+
+        function buildEvidencePanel(ranking, cardIndex) {
+            const explanation = ranking.explanation || {};
+            const skillDetails = explanation.skill_match_details || [];
+            const matchedSkills = Array.isArray(ranking.matched_skills) ? ranking.matched_skills : [];
+            const missingSkills = Array.isArray(ranking.missing_skills) ? ranking.missing_skills : [];
+
+            // Collect evidence from skill_match_details
+            let hasAnyEvidence = false;
+            let groupsHtml = '';
+
+            if (Array.isArray(skillDetails) && skillDetails.length > 0) {
+                skillDetails.forEach(detail => {
+                    const items = Array.isArray(detail.items) ? detail.items : [];
+                    items.forEach(itm => {
+                        const skill = (typeof itm === 'string') ? itm : (itm.skill_name || itm.skill || '');
+                        const ev = (typeof itm === 'object' && Array.isArray(itm.evidence)) ? itm.evidence : [];
+                        const isMissing = !itm.candidate_has;
+                        if (ev.length > 0) {
+                            hasAnyEvidence = true;
+                            groupsHtml += `<div class="evidence-skill-group">`;
+                            groupsHtml += `<div class="evidence-skill-label${isMissing ? ' missing-skill' : ''}">`;
+                            groupsHtml += `${isMissing ? '✕' : '✓'} ${escapeHtml(skill)}</div>`;
+                            ev.forEach(sn => {
+                                groupsHtml += `<div class="evidence-snippet">${highlightKeywordInSnippet(sn, skill)}</div>`;
+                            });
+                            groupsHtml += `</div>`;
+                        } else if (skill) {
+                            groupsHtml += `<div class="evidence-skill-group">`;
+                            groupsHtml += `<div class="evidence-skill-label${isMissing ? ' missing-skill' : ''}">`;
+                            groupsHtml += `${isMissing ? '✕' : '✓'} ${escapeHtml(skill)}</div>`;
+                            groupsHtml += `<div class="evidence-no-data">No resume evidence extracted</div>`;
+                            groupsHtml += `</div>`;
+                        }
+                    });
+                });
+            }
+
+            // If no skill_match_details at all, build from matched/missing arrays
+            if (!groupsHtml && (matchedSkills.length > 0 || missingSkills.length > 0)) {
+                matchedSkills.forEach(s => {
+                    groupsHtml += `<div class="evidence-skill-group">`;
+                    groupsHtml += `<div class="evidence-skill-label">✓ ${escapeHtml(s)}</div>`;
+                    groupsHtml += `<div class="evidence-no-data">Evidence available in detailed analysis</div>`;
+                    groupsHtml += `</div>`;
+                });
+                missingSkills.forEach(s => {
+                    groupsHtml += `<div class="evidence-skill-group">`;
+                    groupsHtml += `<div class="evidence-skill-label missing-skill">✕ ${escapeHtml(s)}</div>`;
+                    groupsHtml += `<div class="evidence-no-data">Skill not found in resume</div>`;
+                    groupsHtml += `</div>`;
+                });
+            }
+
+            if (!groupsHtml) return '';
+
+            const evidenceCount = hasAnyEvidence ? ' — resume lines shown' : '';
+
+            return `
+                <div class="evidence-panel" id="evidence-panel-${cardIndex}">
+                    <div class="evidence-panel-header" onclick="toggleEvidencePanel(${cardIndex})">
+                        <div class="evidence-panel-title">
+                            <svg style="width:1em;height:1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            Evidence-Based Scoring${evidenceCount}
+                        </div>
+                        <span class="evidence-panel-toggle">▼</span>
+                    </div>
+                    <div class="evidence-panel-body">
+                        ${groupsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleEvidencePanel(cardIndex) {
+            const panel = document.getElementById('evidence-panel-' + cardIndex);
+            if (panel) panel.classList.toggle('open');
+        }
+
         function displayRankingResults(data) {
             const container = document.getElementById('rankingResults');
             const finalContainer = document.getElementById('finalResults');
@@ -2222,6 +3015,9 @@
                 const skillScore = Number(ranking.skill_match_score ?? ranking.ranking_scores?.skill_match_score ?? 0) || 0;
                 const experienceScore = Number(ranking.experience_match_score ?? ranking.ranking_scores?.experience_match_score ?? 0) || 0;
                 const seniorityScore = Number(ranking.seniority_alignment_score ?? ranking.ranking_scores?.seniority_alignment_score ?? 0) || 0;
+                const mustHaveCoverage = Number(ranking.ranking_scores?.must_have_coverage ?? ranking.must_have_coverage ?? NaN);
+                const niceToHaveCoverage = Number(ranking.ranking_scores?.nice_to_have_coverage ?? ranking.nice_to_have_coverage ?? NaN);
+                const evidenceConfidence = Number(ranking.ranking_scores?.evidence_confidence ?? ranking.skill_evidence_score ?? NaN);
                 const matchedSkills = Array.isArray(ranking.matched_skills) ? ranking.matched_skills : [];
                 const missingSkills = Array.isArray(ranking.missing_skills) ? ranking.missing_skills : [];
                 
@@ -2259,6 +3055,33 @@
                                     <div class="progress-fill" style="width: ${Math.min(seniorityScore, 100)}%"></div>
                                 </div>
                             </div>
+                            ${Number.isFinite(mustHaveCoverage) ? `
+                            <div class="score-item">
+                                <div class="score-label">Must-have Coverage</div>
+                                <div class="score-value">${mustHaveCoverage.toFixed(0)}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(mustHaveCoverage, 100)}%"></div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            ${Number.isFinite(niceToHaveCoverage) ? `
+                            <div class="score-item">
+                                <div class="score-label">Preferred Coverage</div>
+                                <div class="score-value">${niceToHaveCoverage.toFixed(0)}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(niceToHaveCoverage, 100)}%"></div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            ${Number.isFinite(evidenceConfidence) ? `
+                            <div class="score-item">
+                                <div class="score-label">Evidence Quality</div>
+                                <div class="score-value">${evidenceConfidence.toFixed(0)}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(evidenceConfidence, 100)}%"></div>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
 
                         <div class="insights">
@@ -2281,7 +3104,13 @@
                             ` : ''}
                         </div>
 
-                        <button class="btn-explanation" onclick="showExplanation('${ranking.ranking_id}')">View Detailed Analysis</button>
+                        ${buildEvidencePanel(ranking, index)}
+
+                        <div class="card-action-row">
+                            <button class="btn-resume" onclick="openResume('${ranking.candidate_id || 'N/A'}', false)">View Resume</button>
+                            <button class="btn-resume" onclick="openResume('${ranking.candidate_id || 'N/A'}', true)">Download Resume</button>
+                            <button class="btn-explanation" onclick="showExplanation('${ranking.ranking_id}')">View Detailed Analysis</button>
+                        </div>
                     </div>
                 `;
             });
@@ -2306,7 +3135,9 @@
 
         async function loadCandidates() {
             try {
-                const response = await fetch(`${API_BASE_URL}/candidates/list`);
+                const params = getCandidateFilterParams();
+                const query = params.toString();
+                const response = await fetch(`${API_BASE_URL}/candidates/list${query ? `?${query}` : ''}`);
                 const data = await response.json();
                 allCandidates = Array.isArray(data) ? data : [];
 
@@ -2351,6 +3182,11 @@
                 console.error('Error loading candidates:', error);
             }
         }
+
+        document.getElementById('candidateFiltersForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            loadCandidates();
+        });
 
         async function loadJobs() {
             try {
@@ -2547,6 +3383,39 @@
                     ` : ''}
                 `;
 
+                // Attach skill evidence snippets when present
+                const candidateId = data.candidate_id || 'N/A';
+                const skillDetails = explanation.skill_match_details || [];
+                if (Array.isArray(skillDetails) && skillDetails.length > 0) {
+                    html += `
+                    <div class="explanation-section">
+                        <div class="explanation-section-title">🔎 Evidence</div>
+                        <div class="explanation-section-content" id="evidenceContent">
+                    `;
+
+                    skillDetails.forEach(detail => {
+                        const category = detail.category || '';
+                        html += `<div style="margin-bottom:8px;"><strong>${category}</strong></div>`;
+                        const items = Array.isArray(detail.items) ? detail.items : [];
+                        items.forEach(itm => {
+                            const skill = (typeof itm === 'string') ? itm : (itm.skill || 'Skill');
+                            const ev = (typeof itm === 'object' && itm.evidence) ? itm.evidence : [];
+                            html += `<div style="margin-bottom:6px;"><em>${skill}</em>`;
+                            if (Array.isArray(ev) && ev.length > 0) {
+                                html += '<div style="margin-top:4px;">';
+                                ev.forEach(sn => {
+                                    const encodedSnippet = encodeURIComponent(sn);
+                                    html += `<div class="evidence-snippet">${escapeHtml(sn)} <a href="#" class="open-resume-link" onclick="openResumeHighlight('${candidateId}','` + encodedSnippet + `');return false;">Open in Resume</a></div>`;
+                                });
+                                html += '</div>';
+                            }
+                            html += `</div>`;
+                        });
+                    });
+
+                    html += `</div></div>`;
+                }
+
                 document.getElementById('explanationContent').innerHTML = html;
                 document.getElementById('explanationModal').classList.add('active');
             } catch (error) {
@@ -2554,8 +3423,84 @@
             }
         }
 
+        function openResume(candidateId, download = false) {
+            if (!candidateId || candidateId === 'N/A') {
+                showError('rankError', 'No candidate ID available for this resume');
+                return;
+            }
+
+            const url = `${API_BASE_URL}/candidates/${candidateId}/resume?download=${download ? 'true' : 'false'}`;
+            if (download) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                return;
+            }
+
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
         function closeExplanationModal() {
             document.getElementById('explanationModal').classList.remove('active');
+        }
+
+        async function openResumeHighlight(candidateId, encodedSnippet) {
+            try {
+                if (!candidateId || candidateId === 'N/A') {
+                    showError('rankError', 'No candidate ID available for resume highlight');
+                    return;
+                }
+                const snippet = decodeURIComponent(encodedSnippet || '');
+                const resp = await fetch(`${API_BASE_URL}/candidates/${candidateId}/resume-text`);
+                const data = await resp.json();
+                if (!resp.ok) {
+                    // fallback: open original resume
+                    openResume(candidateId, false);
+                    return;
+                }
+
+                const text = data.resume_text || '';
+                if (!text) {
+                    showError('rankError', 'No parsed resume text available for this candidate');
+                    return;
+                }
+
+                const escapedSnippet = escapeHtml(snippet);
+                const highlightHtml = text.split('\n').map(line => escapeHtml(line)).join('\n');
+
+                let highlighted = highlightHtml;
+                if (escapedSnippet && highlighted.toLowerCase().includes(escapedSnippet.toLowerCase())) {
+                    const idx = highlighted.toLowerCase().indexOf(escapedSnippet.toLowerCase());
+                    const before = highlighted.slice(0, idx);
+                    const match = highlighted.slice(idx, idx + escapedSnippet.length);
+                    const after = highlighted.slice(idx + escapedSnippet.length);
+                    highlighted = before + '<mark>' + match + '</mark>' + after;
+                }
+
+                document.getElementById('resumeContent').innerHTML = highlighted;
+                document.getElementById('resumeModal').classList.add('active');
+            } catch (err) {
+                console.error('Error opening resume highlight:', err);
+                openResume(candidateId, false);
+            }
+        }
+
+        function closeResumeModal() {
+            document.getElementById('resumeModal').classList.remove('active');
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe && unsafe !== '') return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         function showSuccessModal(title, message, details) {
@@ -2733,6 +3678,7 @@
         loadCandidates();
         loadJobs();
         setReportButtonState(false);
+        updateWeightSummary();
 
         // ── Auth ──────────────────────────────────────────────────────────────
         (function initAuth() {
