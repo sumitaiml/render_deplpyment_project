@@ -28,6 +28,7 @@ BACKEND_BASE_URL = "http://127.0.0.1:8000"
 GATEWAY_HOST = "0.0.0.0"
 GATEWAY_PUBLIC_HOST = "localhost"
 GATEWAY_PORT = int(os.environ.get("PORT", "10000"))
+IS_RENDER = os.environ.get("RENDER") == "true"
 
 FRONTEND_FILE = "index_professional.html" if (ROOT_DIR / "index_professional.html").exists() else "index.html"
 LOADING_FILE = "loading_dashboard.html"
@@ -73,19 +74,24 @@ def _start_backend() -> None:
         "127.0.0.1",
         "--port",
         "8000",
-        "--reload",
     ]
+    if not IS_RENDER:
+        cmd.append("--reload")
 
     print("[gateway] Starting backend...")
     _backend_process = subprocess.Popen(cmd, cwd=str(BACKEND_DIR))
 
-    for _ in range(45):
+    warmup_seconds = 120 if IS_RENDER else 45
+    for _ in range(warmup_seconds):
         if _is_backend_running():
             print("[gateway] Backend is ready.")
             return
+        if _backend_process.poll() is not None:
+            print(f"[gateway] Backend process exited with code {_backend_process.returncode}")
+            return
         time.sleep(1)
 
-    raise RuntimeError("Backend did not become ready in time.")
+    print("[gateway] Backend is taking longer than expected to become ready.")
 
 
 def _start_backend_async() -> None:
@@ -200,7 +206,7 @@ def main() -> None:
 
     _start_backend_async()
 
-    if os.environ.get("RENDER") != "true":
+    if not IS_RENDER:
         try:
             webbrowser.open(app_url)
         except Exception:
