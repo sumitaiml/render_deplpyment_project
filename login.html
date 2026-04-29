@@ -539,7 +539,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
-            }, 30000);
+            }, 120000);
 
             const data = await parseResponse(res);
 

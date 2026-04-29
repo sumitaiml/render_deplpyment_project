@@ -99,7 +99,7 @@ def _start_backend_async() -> None:
     thread.start()
 
 
-def _ensure_backend_running(max_wait_seconds: int = 20) -> bool:
+def _ensure_backend_running(max_wait_seconds: int = 120) -> bool:
     if _is_backend_running():
         return True
 
