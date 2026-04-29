@@ -33,6 +33,57 @@ def _mask_database_url(url: str) -> str:
 # Initialize database lazily during startup so the app can still boot
 # and expose health/docs endpoints if the database is temporarily unavailable.
 _database_ready = False
+_database_mode = "uninitialized"
+
+
+def _reset_database_manager() -> None:
+    """Clear cached engine/session state before re-initializing the database."""
+    DatabaseManager._engine = None
+    DatabaseManager._session_maker = None
+
+
+def _verify_database_connection() -> None:
+    """Ensure the configured database can actually be reached."""
+    engine = DatabaseManager.get_engine()
+    connection = engine.connect()
+    try:
+        connection.close()
+    finally:
+        if not connection.closed:
+            connection.close()
+
+
+def _initialize_database_with_fallback() -> None:
+    """Initialize the configured database, falling back to SQLite if needed."""
+    global _database_ready, _database_mode
+
+    try:
+        _reset_database_manager()
+        DatabaseManager.initialize()
+        _verify_database_connection()
+        DatabaseManager.create_all_tables()
+        _database_ready = True
+        _database_mode = "primary"
+        logger.info("✅ Database initialized and tables ready")
+        return
+    except Exception as exc:
+        logger.exception(f"Primary database initialization failed: {exc}")
+
+    fallback_url = "sqlite:///./hrtech_db.db"
+    logger.warning(f"Falling back to local SQLite database: {fallback_url}")
+    settings.DATABASE_URL = fallback_url
+
+    try:
+        _reset_database_manager()
+        DatabaseManager.initialize()
+        DatabaseManager.create_all_tables()
+        _database_ready = True
+        _database_mode = "fallback-sqlite"
+        logger.info("✅ SQLite fallback database initialized and tables ready")
+    except Exception as fallback_exc:
+        _database_ready = False
+        _database_mode = "failed"
+        logger.exception(f"SQLite fallback initialization failed: {fallback_exc}")
 
 # Create FastAPI app
 app = FastAPI(
@@ -99,6 +150,10 @@ async def get_config():
             "explainability": True,
             "skill_graph_inference": True
         },
+        "database": {
+            "ready": _database_ready,
+            "mode": _database_mode,
+        },
         "ranking_weights": {
             "skill_weight": settings.SKILL_WEIGHT,
             "experience_weight": settings.EXPERIENCE_WEIGHT,
@@ -112,6 +167,7 @@ async def db_status():
     """Expose whether the backend database initialization succeeded."""
     return {
         "database_ready": _database_ready,
+        "database_mode": _database_mode,
         "database_url": _mask_database_url(settings.DATABASE_URL),
     }
 
@@ -151,15 +207,8 @@ async def startup():
     logger.info(f"NLP model: {settings.SPACY_MODEL}")
     logger.info(f"SBERT model: {settings.SBERT_MODEL}")
 
-    global _database_ready
-    try:
-        DatabaseManager.initialize()
-        DatabaseManager.create_all_tables()
-        _database_ready = True
-        logger.info("✅ Database initialized and tables ready")
-    except Exception as exc:
-        _database_ready = False
-        logger.exception(f"Database initialization failed: {exc}")
+    _initialize_database_with_fallback()
+    if not _database_ready:
         logger.warning("Backend will keep running, but auth and data APIs will return 503 until the database is available.")
 
     logger.info("✅ Backend ready!")
