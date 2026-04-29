@@ -30,9 +30,9 @@ def _mask_database_url(url: str) -> str:
         return url
     return url
 
-# Initialize database
-DatabaseManager.initialize()
-DatabaseManager.create_all_tables()
+# Initialize database lazily during startup so the app can still boot
+# and expose health/docs endpoints if the database is temporarily unavailable.
+_database_ready = False
 
 # Create FastAPI app
 app = FastAPI(
@@ -107,6 +107,15 @@ async def get_config():
     }
 
 
+@app.get("/api/db-status")
+async def db_status():
+    """Expose whether the backend database initialization succeeded."""
+    return {
+        "database_ready": _database_ready,
+        "database_url": _mask_database_url(settings.DATABASE_URL),
+    }
+
+
 def custom_openapi():
     """Custom OpenAPI schema"""
     if app.openapi_schema:
@@ -141,6 +150,18 @@ async def startup():
     logger.info(f"Max upload size: {settings.MAX_FILE_SIZE / (1024 * 1024):.1f} MB")
     logger.info(f"NLP model: {settings.SPACY_MODEL}")
     logger.info(f"SBERT model: {settings.SBERT_MODEL}")
+
+    global _database_ready
+    try:
+        DatabaseManager.initialize()
+        DatabaseManager.create_all_tables()
+        _database_ready = True
+        logger.info("✅ Database initialized and tables ready")
+    except Exception as exc:
+        _database_ready = False
+        logger.exception(f"Database initialization failed: {exc}")
+        logger.warning("Backend will keep running, but auth and data APIs will return 503 until the database is available.")
+
     logger.info("✅ Backend ready!")
 
 

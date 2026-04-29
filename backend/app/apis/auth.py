@@ -93,10 +93,23 @@ def _decode_token(token: str) -> dict:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 
+def _ensure_db_ready() -> None:
+    """Return a clean 503 if the backend database could not be initialized."""
+    from app.main import _database_ready
+
+    if not _database_ready:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service is starting. Please try again in a few seconds."
+        )
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
     """Register a new user account."""
+    _ensure_db_ready()
+
     existing = db.query(User).filter(User.email == body.email).first()
     if existing:
         raise HTTPException(
@@ -120,6 +133,8 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, db: Session = Depends(get_db)):
     """Authenticate a user and return a JWT token."""
+    _ensure_db_ready()
+
     user = db.query(User).filter(User.email == body.email).first()
     if not user or not _verify_password(body.password, user.hashed_password):
         raise HTTPException(
@@ -140,6 +155,7 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 def verify(token: str, db: Session = Depends(get_db)):
     """Verify a JWT token and return user info."""
     try:
+        _ensure_db_ready()
         payload = _decode_token(token)
         email: str = payload.get("sub", "")
         username: str = payload.get("username", "")
